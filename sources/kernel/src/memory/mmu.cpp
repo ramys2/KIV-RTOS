@@ -1,6 +1,8 @@
 #include <hal/peripherals.h>
 #include <memory/mmu.h>
 
+#include "process_manager.h"
+
 extern volatile __attribute__((section(".initsys.data"))) uint32_t Page_Directory_Kernel[PT_Size];
 
 uint32_t* const Page_Directory_Kernel_High = reinterpret_cast<uint32_t*>(_virt_data_start + reinterpret_cast<uint32_t>(&Page_Directory_Kernel));
@@ -52,3 +54,41 @@ void map_memory(uint32_t* target_pt, uint32_t phys, uint32_t virt)
             | DL1_Flags::TEX_001
             | DL1_Flags::Shareable;
 }
+
+shmmem::CShared_Memory_Manager::CShared_Memory_Manager()
+{
+    //
+}
+
+shmmem::CShared_Memory_Manager::~CShared_Memory_Manager() 
+{
+    //
+}
+
+char *shmmem::CShared_Memory_Manager::map_file(const uint32_t requested_size, const uint32_t fd)
+{
+
+    const IFile *file = this->retrieve_file(fd);
+    // nejdrive se podivame, jestli je file otevreny a potom zkontrolujeme zda jeho obsahem jsou znaky
+    if (!file || file->Get_File_Type() != NFile_Type_Major::Character)
+    {
+        return nullptr;
+    }
+
+    
+
+    return nullptr;
+}
+
+const IFile *shmmem::CShared_Memory_Manager::retrieve_file(const uint32_t fd)
+{
+    TTask_Struct *task = sProcessMgr.Get_Current_Process();
+    if (!task)
+    {
+        return nullptr;
+    }
+
+    return task->opened_files[fd];
+}
+
+shmmem::CShared_Memory_Manager sShmMemMgr; // vytvoreni statickeho manazeru pro spravu sdilene pameti

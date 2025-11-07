@@ -3,6 +3,8 @@
 #include <hal/peripherals.h>
 #include <hal/intdef.h>
 
+#include "filesystem.h"
+
 // symboly definovane v link.ld
 extern "C"
 {
@@ -188,3 +190,30 @@ extern "C" void mmu_invalidate_tlb();
 void copy_kernel_page_table_to(uint32_t* target);
 // namapuje do zadane tabulky dane adresy; pro ted jde jen o stranky velikosti 1MB
 void map_memory(uint32_t* target_pt, uint32_t phys, uint32_t virt);
+
+namespace shmmem
+{
+    class CShared_Memory_Manager
+    {
+        public:
+            CShared_Memory_Manager();
+            ~CShared_Memory_Manager();
+
+            char *map_file(const uint32_t requested_size, const uint32_t fd);
+
+        private:
+            
+            /*
+            Pomoci predaneho file descriptoru se pokusi od prave beziciho procesu ziskat otevreny soubor.
+            Pokud neexistuje vraci nullptr.
+            */
+            const IFile *retrieve_file(const uint32_t fd);
+
+            /*
+            Zavola resource manazera a pokusi se od nej ziskat jmeno souboru, ktere by melo byt zavedeno pri otevreni filu.
+            */
+            const char *retrieve_filename(const IFile *file);
+    };
+}
+
+extern shmmem::CShared_Memory_Manager sShmMemMgr;
