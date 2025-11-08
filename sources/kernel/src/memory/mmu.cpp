@@ -76,7 +76,12 @@ char *shmmem::CShared_Memory_Manager::Map_File(const uint32_t requested_size, co
         return nullptr;
     }
 
+    // pokusime se ziskat jmeno souboru u resource manazera u kteroho se mel zaregistrovat
     const char *filename = this->Retrieve_Filename(fd);
+    if (!filename)
+    {
+        return nullptr;
+    }
 
     return nullptr;
 }
@@ -84,6 +89,8 @@ char *shmmem::CShared_Memory_Manager::Map_File(const uint32_t requested_size, co
 const IFile *shmmem::CShared_Memory_Manager::Retrieve_File(const uint32_t fd)
 {
     TTask_Struct *task = sProcessMgr.Get_Current_Process();
+
+    // pro jistotu, kdyby soucasny process byl null nebo fd prekracoval maximalni pocet otevrenych souboru
     if (!task || fd >= Max_Process_Opened_Files)
     {
         return nullptr;
@@ -95,11 +102,13 @@ const IFile *shmmem::CShared_Memory_Manager::Retrieve_File(const uint32_t fd)
 const char *shmmem::CShared_Memory_Manager::Retrieve_Filename(const uint32_t fd)
 {
     TTask_Struct *current = sProcessMgr.Get_Current_Process();
+    // pro jistotu, kdyby soucasny process byl null nebo fd prekracoval maximalni pocet otevrenych souboru
     if (!current || fd >= Max_Process_Opened_Files)
     {
         return nullptr;
     }
 
+    return sProcess_Resource_Manager.Find_Registerd_File(current->pid, fd);
 
 }
 

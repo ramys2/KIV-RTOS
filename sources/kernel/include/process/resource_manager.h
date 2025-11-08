@@ -95,6 +95,7 @@ class CProcess_Resource_Manager
         void Free_Pipe(CPipe* pipe);
 
         bool Register_New_File(const char *filepath, const uint32_t pid, const uint32_t fd);
+        const char *Find_Registerd_File(const uint32_t pid, const uint32_t fd);
 };
 
 extern CProcess_Resource_Manager sProcess_Resource_Manager;

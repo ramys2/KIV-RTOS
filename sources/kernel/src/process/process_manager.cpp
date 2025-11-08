@@ -337,7 +337,7 @@ void CProcess_Manager::Handle_Filesystem_SWI(NSWI_Filesystem_Service svc_idx, ui
                             !sProcess_Resource_Manager.Register_New_File(filepath, current->pid, target.r0)
                         )
             {
-                // Pokud neprosla registrace do resource manazeru nebo soucasny proces je nullptr z nejakeho duvodu, tak do r0 musime opet nastavit Invalid_Handle
+                // pokud neprosla registrace do resource manazeru nebo soucasny proces je nullptr z nejakeho duvodu, tak do r0 musime opet nastavit Invalid_Handle
                 if (target.r0 != Invalid_Handle)
                 {
                     target.r0 = Invalid_Handle;

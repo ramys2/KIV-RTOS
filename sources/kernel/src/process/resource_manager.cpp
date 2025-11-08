@@ -1,6 +1,8 @@
 #include <process/resource_manager.h>
 #include <stdstring.h>
 
+#include "process_manager.h"
+
 CProcess_Resource_Manager sProcess_Resource_Manager;
 
 CProcess_Resource_Manager::CProcess_Resource_Manager()
@@ -195,6 +197,7 @@ void CProcess_Resource_Manager::Free_Pipe(CPipe* pipe)
 bool CProcess_Resource_Manager::Register_New_File(const char *filepath, const uint32_t pid, const uint32_t fd)
 {
     TOpened_File_Record *new_record = new TOpened_File_Record();
+    // validace, ze path nebyl predan nullptr a jestli se podarilo alokovat novy zaznam do seznamu
     if (!filepath || !new_record)
     {
         return false;
@@ -206,6 +209,8 @@ bool CProcess_Resource_Manager::Register_New_File(const char *filepath, const ui
 
     int filename_len = strlen(filepath);
     new_record->filepath = new char[filename_len + 1];
+
+    // validace, ze se podarilo alokovat misto pro jmeno souboru v zaznamu
     if (!new_record->filepath)
     {
         delete new_record;
@@ -217,4 +222,26 @@ bool CProcess_Resource_Manager::Register_New_File(const char *filepath, const ui
     first_record = new_record;
 
     return true;
+}
+
+const char *CProcess_Resource_Manager::Find_Registerd_File(const uint32_t pid, const uint32_t fd)
+{
+    // kontrola zda file descriptor nepresahuje velikost maximalniho poctu otevrenych souboru pro proces
+    if (fd >= Max_Process_Opened_Files)
+    {
+        return nullptr;
+    }
+
+    TOpened_File_Record *current = first_record;
+    while (current != nullptr)
+    {
+        if (current->pid == pid && current->file_descriptor == fd)
+        {
+            return current->filepath;
+        }
+        current = current->next;
+    }
+
+    // dotazovany file neni registrovany u prislusneho procesu
+    return nullptr;
 }
