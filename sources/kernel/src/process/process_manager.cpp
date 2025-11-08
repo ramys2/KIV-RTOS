@@ -322,16 +322,26 @@ void CProcess_Manager::Handle_Filesystem_SWI(NSWI_Filesystem_Service svc_idx, ui
         case NSWI_Filesystem_Service::Open:
         {
             target.r0 = Invalid_Handle;
+            const char *filepath = reinterpret_cast<const char*>(r0);
+            TTask_Struct *current;
 
-            IFile* f = sFilesystem.Open(reinterpret_cast<const char*>(r0), static_cast<NFile_Open_Mode>(r1));
+            IFile* f = sFilesystem.Open(filepath, static_cast<NFile_Open_Mode>(r1));
             if (!f)
                 return;
 
             target.r0 = Map_File_To_Current(f);
 
             // nepodarilo se namapovat, napr. proto, ze jsme dosahli limitu otevrenych souboru
-            if (target.r0 == Invalid_Handle)
+            if (target.r0 == Invalid_Handle ||
+                            !(current = sProcessMgr.Get_Current_Process()) ||
+                            !sProcess_Resource_Manager.Register_New_File(filepath, current->pid, target.r0)
+                        )
             {
+                // Pokud neprosla registrace do resource manazeru nebo soucasny proces je nullptr z nejakeho duvodu, tak do r0 musime opet nastavit Invalid_Handle
+                if (target.r0 != Invalid_Handle)
+                {
+                    target.r0 = Invalid_Handle;
+                }
                 f->Close();
                 delete f;
             }

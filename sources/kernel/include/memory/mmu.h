@@ -199,20 +199,20 @@ namespace shmmem
             CShared_Memory_Manager();
             ~CShared_Memory_Manager();
 
-            char *map_file(const uint32_t requested_size, const uint32_t fd);
+            char *Map_File(const uint32_t requested_size, const uint32_t fd);
 
         private:
             
             /*
-            Pomoci predaneho file descriptoru se pokusi od prave beziciho procesu ziskat otevreny soubor.
+            Zavola process manazera a pomoci predaneho file descriptoru se pokusi od prave beziciho procesu ziskat otevreny soubor.
             Pokud neexistuje vraci nullptr.
             */
-            const IFile *retrieve_file(const uint32_t fd);
+            const IFile *Retrieve_File(const uint32_t fd);
 
             /*
             Zavola resource manazera a pokusi se od nej ziskat jmeno souboru, ktere by melo byt zavedeno pri otevreni filu.
             */
-            const char *retrieve_filename(const IFile *file);
+            const char *Retrieve_Filename(const uint32_t fd);
     };
 }
 

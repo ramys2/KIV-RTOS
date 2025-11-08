@@ -2,6 +2,7 @@
 #include <memory/mmu.h>
 
 #include "process_manager.h"
+#include "resource_manager.h"
 
 extern volatile __attribute__((section(".initsys.data"))) uint32_t Page_Directory_Kernel[PT_Size];
 
@@ -65,30 +66,41 @@ shmmem::CShared_Memory_Manager::~CShared_Memory_Manager()
     //
 }
 
-char *shmmem::CShared_Memory_Manager::map_file(const uint32_t requested_size, const uint32_t fd)
+char *shmmem::CShared_Memory_Manager::Map_File(const uint32_t requested_size, const uint32_t fd)
 {
 
-    const IFile *file = this->retrieve_file(fd);
+    const IFile *file = this->Retrieve_File(fd);
     // nejdrive se podivame, jestli je file otevreny a potom zkontrolujeme zda jeho obsahem jsou znaky
     if (!file || file->Get_File_Type() != NFile_Type_Major::Character)
     {
         return nullptr;
     }
 
-    
+    const char *filename = this->Retrieve_Filename(fd);
 
     return nullptr;
 }
 
-const IFile *shmmem::CShared_Memory_Manager::retrieve_file(const uint32_t fd)
+const IFile *shmmem::CShared_Memory_Manager::Retrieve_File(const uint32_t fd)
 {
     TTask_Struct *task = sProcessMgr.Get_Current_Process();
-    if (!task)
+    if (!task || fd >= Max_Process_Opened_Files)
     {
         return nullptr;
     }
 
     return task->opened_files[fd];
+}
+
+const char *shmmem::CShared_Memory_Manager::Retrieve_Filename(const uint32_t fd)
+{
+    TTask_Struct *current = sProcessMgr.Get_Current_Process();
+    if (!current || fd >= Max_Process_Opened_Files)
+    {
+        return nullptr;
+    }
+
+
 }
 
 shmmem::CShared_Memory_Manager sShmMemMgr; // vytvoreni statickeho manazeru pro spravu sdilene pameti

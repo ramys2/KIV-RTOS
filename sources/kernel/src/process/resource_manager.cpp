@@ -191,3 +191,30 @@ void CProcess_Resource_Manager::Free_Pipe(CPipe* pipe)
         }
     }
 }
+
+bool CProcess_Resource_Manager::Register_New_File(const char *filepath, const uint32_t pid, const uint32_t fd)
+{
+    TOpened_File_Record *new_record = new TOpened_File_Record();
+    if (!filepath || !new_record)
+    {
+        return false;
+    }
+
+    new_record->pid = pid;
+    new_record->file_descriptor = fd;
+
+
+    int filename_len = strlen(filepath);
+    new_record->filepath = new char[filename_len + 1];
+    if (!new_record->filepath)
+    {
+        delete new_record;
+        return false;
+    }
+    strncpy(new_record->filepath, filepath, filename_len + 1);
+
+    new_record->next = first_record;
+    first_record = new_record;
+
+    return true;
+}

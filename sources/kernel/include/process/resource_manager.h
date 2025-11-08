@@ -63,10 +63,20 @@ class CProcess_Resource_Manager
             unsigned int alloc_count;
         };
 
+        struct TOpened_File_Record
+        {
+            TOpened_File_Record *next;
+            char *filepath;
+            uint32_t pid;
+            uint32_t file_descriptor;
+        };
+
         TMutex_Record mMutexes[Mutex_Count];
         TSemaphore_Record mSemaphores[Semaphore_Count];
         TCond_Var_Record mCondVars[Cond_Var_Count];
         TPipe_Record mPipes[Pipe_Count];
+
+        TOpened_File_Record *first_record;
 
     public:
         CProcess_Resource_Manager();
@@ -83,6 +93,8 @@ class CProcess_Resource_Manager
 
         CPipe* Alloc_Pipe(const char* name, uint32_t pipe_size);
         void Free_Pipe(CPipe* pipe);
+
+        bool Register_New_File(const char *filepath, const uint32_t pid, const uint32_t fd);
 };
 
 extern CProcess_Resource_Manager sProcess_Resource_Manager;
