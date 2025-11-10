@@ -1,8 +1,9 @@
 #include <hal/peripherals.h>
 #include <memory/mmu.h>
 
-#include "process_manager.h"
-#include "resource_manager.h"
+#include "process/process_manager.h"
+#include "process/resource_manager.h"
+#include "process/process.h"
 
 extern volatile __attribute__((section(".initsys.data"))) uint32_t Page_Directory_Kernel[PT_Size];
 

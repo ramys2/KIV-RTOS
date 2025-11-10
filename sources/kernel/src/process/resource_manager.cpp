@@ -1,7 +1,7 @@
 #include <process/resource_manager.h>
 #include <stdstring.h>
 
-#include "process_manager.h"
+#include "process/process.h"
 
 CProcess_Resource_Manager sProcess_Resource_Manager;
 

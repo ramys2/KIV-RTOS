@@ -3,7 +3,7 @@
 #include <hal/peripherals.h>
 #include <hal/intdef.h>
 
-#include "filesystem.h"
+#include "fs/filesystem.h"
 
 // symboly definovane v link.ld
 extern "C"

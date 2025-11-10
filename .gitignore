@@ -2,6 +2,8 @@
 sources/build/*
 sources/userspace/build/*
 build/*
+.cache/*
+sources/.cache/*
 
 # personal VSCode workspaces
 KIV-RTOS.code-workspace
