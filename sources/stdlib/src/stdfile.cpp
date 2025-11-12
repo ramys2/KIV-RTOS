@@ -104,6 +104,19 @@ NSWI_Result_Code wait(uint32_t file, uint32_t count, uint32_t notified_deadline)
     return retcode;
 }
 
+char *mmap(uint32_t size, uint32_t file)
+{
+    char *memory;
+
+    asm volatile("mov r0, %0" : : "r" (size));
+    asm volatile("mov r1, %0" : : "r" (file));
+    asm volatile("swi 71");
+
+    asm volatile("mov %0, r0" : "=r" (memory));
+
+    return memory;
+}
+
 bool sleep(uint32_t ticks, uint32_t notified_deadline)
 {
     uint32_t retcode;

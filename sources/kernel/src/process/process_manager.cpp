@@ -410,6 +410,26 @@ void CProcess_Manager::Handle_Filesystem_SWI(NSWI_Filesystem_Service svc_idx, ui
             mCurrent_Task_Node->task->notified_deadline = Deadline_Unchanged;
             break;
         }
+        case NSWI_Filesystem_Service::MMap:
+        {
+            if (r0 % mem::PageSize != 0 || r1 > Max_Process_Opened_Files)
+            {
+                target.r0 = 0;
+                return;
+            }
+
+            char *result = sShared_Memory_Manager.Map_File(r0, r1);
+
+            // Pokud dojde k chybe pri mapovani
+            if (!result)
+            {
+                target.r0 = 0;
+                return;
+            }
+
+            target.r0 = reinterpret_cast<uint32_t>(result);
+            break;
+        }
     }
 }
 

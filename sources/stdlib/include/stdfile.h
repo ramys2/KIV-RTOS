@@ -23,3 +23,5 @@ NSWI_Result_Code wait(uint32_t file, uint32_t count = 1, uint32_t notified_deadl
 bool sleep(uint32_t ticks, uint32_t notified_deadline = Deadline_Unchanged);
 
 uint32_t pipe(const char* name, uint32_t buf_size);
+
+char *mmap(uint32_t size, uint32_t file);

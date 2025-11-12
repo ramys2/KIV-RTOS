@@ -231,4 +231,4 @@ namespace shmmem
     };
 }
 
-extern shmmem::CShared_Memory_Manager sShmMemMgr;
+extern shmmem::CShared_Memory_Manager sShared_Memory_Manager;

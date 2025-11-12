@@ -96,6 +96,11 @@ enum class NSWI_Filesystem_Service
     // IN:  r0 = handle otevreneho souboru, r1 = pocet zdroju, r2 = nova deadline po probuzeni (nebo Deadline_Unchanged pokud se nema menit, nebo Indefinite pokud se ma zrusit)
     // OUT: r0 = indikator uspechu (NSWI_Result_Code)
     Wait            = 6,
+
+    // Mapuje soubor do sdilene pameti
+    // IN: r0 = pozadovana velikost, r1 = cesta k souboru
+    // OUT: r0 = ukazatel na misto sdilene pameti
+    MMap            = 7
 };
 
 // mozne IOCtl operace nad souborem

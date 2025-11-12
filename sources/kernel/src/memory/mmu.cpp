@@ -5,7 +5,7 @@
 #include "process/process_manager.h"
 #include "process/resource_manager.h"
 #include "process/process.h"
-#include "pages.h"
+#include "memory/pages.h"
 
 extern volatile __attribute__((section(".initsys.data"))) uint32_t Page_Directory_Kernel[PT_Size];
 
@@ -200,15 +200,15 @@ char *shmmem::CShared_Memory_Manager::Map_To_Process_Page(const shmmem::TShared_
         return nullptr;
     }
 
-    unsigned long pt_phys_addrs = current->cpu_context.ttbr0;
+    unsigned long pt_phys_addrs = current->cpu_context.ttbr0; // TODO: Odmaskovat adresu tabulky stranek
     uint32_t *pt_virt_addrs = reinterpret_cast<uint32_t *>(pt_phys_addrs + mem::MemoryVirtualBase);
 
     // Pokusime se najit volnou stranku a pridat odkaz na sdileny ramec
     for (uint32_t i = 0; i < PT_Size; i++)
     {
-        if (pt_virt_addrs[i] = 0)
+        if (pt_virt_addrs[i] == 0) // TODO opravit rovnitko a odmaskovat TRANSLATION_FAIL bit a s tim porvnavat
         {
-            pt_virt_addrs[i] = (record->phys_address & 0xFFF00000);
+            pt_virt_addrs[i] = (record->phys_address & 0xFFF00000); // TODO maskovat dalsi priznaky pro danou stranku
             return reinterpret_cast<char *>(pt_virt_addrs[i]);
         }
     }
@@ -216,4 +216,4 @@ char *shmmem::CShared_Memory_Manager::Map_To_Process_Page(const shmmem::TShared_
     return nullptr;
 }
 
-shmmem::CShared_Memory_Manager sShmMemMgr; // vytvoreni statickeho manazeru pro spravu sdilene pameti
+shmmem::CShared_Memory_Manager sShared_Memory_Manager; // vytvoreni statickeho manazeru pro spravu sdilene pameti
