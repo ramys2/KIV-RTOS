@@ -178,7 +178,7 @@ shmmem::TShared_Memory_Record *shmmem::CShared_Memory_Manager::Alloc_New_Record(
     }
 
     strncpy(new_record->name, filepath, filepath_len);
-    new_record->phys_address = frame_phys_addrs;
+    new_record->phys_address = reinterpret_cast<uint32_t>(frame_phys_addrs);
     new_record->rc = 1;
 
     new_record->next = first_record;
@@ -200,13 +200,13 @@ char *shmmem::CShared_Memory_Manager::Map_To_Process_Page(const shmmem::TShared_
         return nullptr;
     }
 
-    unsigned long pt_phys_addrs = current->cpu_context.ttbr0; // TODO: Odmaskovat adresu tabulky stranek
+    unsigned long pt_phys_addrs = current->cpu_context.ttbr0 & ~ 0x3F;
     uint32_t *pt_virt_addrs = reinterpret_cast<uint32_t *>(pt_phys_addrs + mem::MemoryVirtualBase);
 
     // Pokusime se najit volnou stranku a pridat odkaz na sdileny ramec
     for (uint32_t i = 0; i < PT_Size; i++)
     {
-        if (pt_virt_addrs[i] == 0) // TODO opravit rovnitko a odmaskovat TRANSLATION_FAIL bit a s tim porvnavat
+        if ((pt_virt_addrs[i] & 0b11U) | DL1_Flags::Access_Type_Translation_Fault == 0)
         {
             pt_virt_addrs[i] = (record->phys_address & 0xFFF00000); // TODO maskovat dalsi priznaky pro danou stranku
             return reinterpret_cast<char *>(pt_virt_addrs[i]);
