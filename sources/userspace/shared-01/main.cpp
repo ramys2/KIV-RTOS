@@ -10,12 +10,13 @@ int main(int argv, char **argc)
 
     while (true)
     {
-        char *c;
+        char c[2];
+        c[1] = '\0';
         mutex_lock(mutex);
-        c = &mem[10];
+        c[0] = mem[10];
         if (!c && *c == 'a')
         {
-            write(display_file, c, 1);
+            write(display_file, c, 2);
         }
         mem[10] = 'b';
         mutex_unlock(mutex);
