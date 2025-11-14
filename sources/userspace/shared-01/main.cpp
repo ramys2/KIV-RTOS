@@ -24,7 +24,7 @@ int main(int argv, char **argc)
 
     // free(mem);
     close(memfile);
-    close(display_file);
     mutex_destroy(mutex);
+    close(display_file);
     return 0;
 }

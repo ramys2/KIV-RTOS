@@ -205,7 +205,9 @@ char *shmmem::CShared_Memory_Manager::Map_To_Process_Page(const shmmem::TShared_
     {
         if ((pt_virt_addrs[i] & 0b11U) | DL1_Flags::Access_Type_Translation_Fault == 0)
         {
-            pt_virt_addrs[i] = (record->phys_address & 0xFFF00000); // TODO maskovat dalsi priznaky pro danou stranku
+            pt_virt_addrs[i] = (record->phys_address & 0xFFF00000)
+            | DL1_Flags::Shareable
+            | DL1_Flags::Access_Full_RW; // TODO maskovat dalsi priznaky pro danou stranku
             return reinterpret_cast<char *>(pt_virt_addrs[i]);
         }
     }
