@@ -80,36 +80,37 @@ char *shmmem::CShared_Memory_Manager::Map_File(const uint32_t requested_size, co
     }
 
     shmmem::TShared_Memory_Record *record = this->Memory_Exists(filepath);
-    char *final_addrs = nullptr;
     if (!record)
     {
         // Pokud jeste neexistuje zaznam, ze by pamet byla sdilena
         // Alokujeme novnou stranku
         uint32_t frame_virt_addrs = sPage_Manager.Alloc_Page();
-        uint32_t frame_phys_addrs = frame_virt_addrs - mem::MemoryVirtualBase;
-
-        // TODO: pridat sanity checky
+        
         // Vytvorime novy zaznam do seznamu
-        record = this->Alloc_New_Record(filepath, frame_phys_addrs);
+        record = this->Alloc_New_Record(filepath, frame_virt_addrs - mem::MemoryVirtualBase);
         if (!record)
         {
             return nullptr;
         }
+    }
 
-        final_addrs = this->Map_To_Process_Page(record);
-        if (!final_addrs)
+    char *final_addrs = Map_To_Process_Page(record);
+    if (final_addrs)
+    {
+        record->rc++;
+        if (record->rc == 1)
         {
-            delete record->name;
-            delete record;
+            record->next = first_record;
+            first_record = record;
         }
     }
     else
     {
-        // Vytahneme si tabulku stranek
-        final_addrs = this->Map_To_Process_Page(record);
-        if (!final_addrs)
+        if (record->rc == 0)
         {
-            record->rc++;
+            sPage_Manager.Free_Page(record->phys_address + mem::MemoryVirtualBase);
+            delete record->name;
+            delete record;
         }
     }
 
@@ -179,10 +180,6 @@ shmmem::TShared_Memory_Record *shmmem::CShared_Memory_Manager::Alloc_New_Record(
 
     strncpy(new_record->name, filepath, filepath_len);
     new_record->phys_address = reinterpret_cast<uint32_t>(frame_phys_addrs);
-    new_record->rc = 1;
-
-    new_record->next = first_record;
-    first_record = new_record;
 
     return new_record;
 }
