@@ -152,6 +152,7 @@ shmmem::TShared_Memory_Record *shmmem::CShared_Memory_Manager::Memory_Exists(con
         {
             return current;
         }
+        current = current->next;
     }
 
     return nullptr;
@@ -203,7 +204,7 @@ char *shmmem::CShared_Memory_Manager::Map_To_Process_Page(const shmmem::TShared_
     // Pokusime se najit volnou stranku a pridat odkaz na sdileny ramec
     for (uint32_t i = 0; i < PT_Size; i++)
     {
-        if ((pt_virt_addrs[i] & 0b11U) | DL1_Flags::Access_Type_Translation_Fault == 0)
+        if (((pt_virt_addrs[i] & 0b11U) | DL1_Flags::Access_Type_Translation_Fault) == 0)
         {
             pt_virt_addrs[i] = (record->phys_address & 0xFFF00000)
             | DL1_Flags::Access_Type_Section_Address
