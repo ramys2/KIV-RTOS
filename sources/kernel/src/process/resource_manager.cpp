@@ -12,6 +12,12 @@ CProcess_Resource_Manager::CProcess_Resource_Manager()
         mMutexes[i].name[0] = '\0';
         mMutexes[i].alloc_count = 0;
     }
+
+    for (uint32_t i = 0; i < Shared_Memory_Count; i++)
+    {
+        mShared_Memory_Records[i].name[0] = '\0';
+        mShared_Memory_Records[i].alloc_count = 0;
+    }
 }
 
 CProcess_Resource_Manager::~CProcess_Resource_Manager()
@@ -194,54 +200,31 @@ void CProcess_Resource_Manager::Free_Pipe(CPipe* pipe)
     }
 }
 
-bool CProcess_Resource_Manager::Register_New_File(const char *filepath, const uint32_t pid, const uint32_t fd)
+CShared_Memory *CProcess_Resource_Manager::Alloc_Shared_Memory(const char *name)
 {
-    TOpened_File_Record *new_record = new TOpened_File_Record();
-    // validace, ze path nebyl predan nullptr a jestli se podarilo alokovat novy zaznam do seznamu
-    if (!filepath || !new_record)
+    for (uint32_t i = 0; i < Shared_Memory_Count; i++)
     {
-        return false;
-    }
-
-    new_record->pid = pid;
-    new_record->file_descriptor = fd;
-
-
-    int filename_len = strlen(filepath);
-    new_record->filepath = new char[filename_len + 1];
-
-    // validace, ze se podarilo alokovat misto pro jmeno souboru v zaznamu
-    if (!new_record->filepath)
-    {
-        delete new_record;
-        return false;
-    }
-    strncpy(new_record->filepath, filepath, filename_len + 1);
-
-    new_record->next = first_record;
-    first_record = new_record;
-
-    return true;
-}
-
-const char *CProcess_Resource_Manager::Find_Registerd_File(const uint32_t pid, const uint32_t fd)
-{
-    // kontrola zda file descriptor nepresahuje velikost maximalniho poctu otevrenych souboru pro proces
-    if (fd >= Max_Process_Opened_Files)
-    {
-        return nullptr;
-    }
-
-    TOpened_File_Record *current = first_record;
-    while (current != nullptr)
-    {
-        if (current->pid == pid && current->file_descriptor == fd)
+        if (mShared_Memory_Records[i].alloc_count > 0)
         {
-            return current->filepath;
+            if (strncmp(mShared_Memory_Records[i].name, name, Max_Shared_Memory_Name_Length) == 0)
+            {
+                mShared_Memory_Records[i].alloc_count++;
+                return &mShared_Memory_Records[i].mem;
+            }
         }
-        current = current->next;
     }
 
-    // dotazovany file neni registrovany u prislusneho procesu
+    for (uint32_t i = 0; i < Shared_Memory_Count; i++)
+    {
+        if (mShared_Memory_Records[i].alloc_count == 0)
+        {
+            mShared_Memory_Records[i].mem.Reset();
+
+            strncpy(mShared_Memory_Records[i].name, name, Max_Shared_Memory_Name_Length);
+            mShared_Memory_Records[i].alloc_count++;
+            return &mShared_Memory_Records[i].mem;
+        }
+    }
+
     return nullptr;
 }

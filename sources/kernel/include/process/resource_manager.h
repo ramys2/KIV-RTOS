@@ -6,6 +6,7 @@
 #include "semaphore.h"
 #include "condvar.h"
 #include "pipe.h"
+#include "shm.h"
 
 // pocet predalokovanych mutexu (a zaroven max. pocet)
 constexpr uint32_t Mutex_Count = 32;
@@ -27,6 +28,9 @@ constexpr uint32_t Pipe_Count = 16;
 // maximalni delka jmena pipe
 constexpr uint32_t Max_Pipe_Name_Length = 16;
 
+constexpr uint32_t Shared_Memory_Count = 16;
+constexpr uint32_t Max_Shared_Memory_Name_Length = 16;
+
 // pri otevirani semaforu = pokud uz musel byt semafor otevreny
 constexpr uint32_t Semaphore_Initial_Res_Count_Unknown = static_cast<uint32_t>(-1);
 // pokud je pri otevirani pipe velikost neznama
@@ -34,68 +38,65 @@ constexpr uint32_t Pipe_Byte_Count_Unknown = static_cast<uint32_t>(-1);
 
 class CProcess_Resource_Manager
 {
-    private:
-        struct TMutex_Record
-        {
-            CMutex mtx;
-            char name[Max_Mutex_Name_Length];
-            unsigned int alloc_count;
-        };
+private:
+    struct TMutex_Record
+    {
+        CMutex mtx;
+        char name[Max_Mutex_Name_Length];
+        unsigned int alloc_count;
+    };
 
-        struct TSemaphore_Record
-        {
-            CSemaphore semaphore;
-            char name[Max_Semaphore_Name_Length];
-            unsigned int alloc_count;
-        };
+    struct TSemaphore_Record
+    {
+        CSemaphore semaphore;
+        char name[Max_Semaphore_Name_Length];
+        unsigned int alloc_count;
+    };
 
-        struct TCond_Var_Record
-        {
-            CCondition_Variable cv;
-            char name[Max_Cond_Var_Name_Length];
-            unsigned int alloc_count;
-        };
+    struct TCond_Var_Record
+    {
+        CCondition_Variable cv;
+        char name[Max_Cond_Var_Name_Length];
+        unsigned int alloc_count;
+    };
 
-        struct TPipe_Record
-        {
-            CPipe pipe;
-            char name[Max_Pipe_Name_Length];
-            unsigned int alloc_count;
-        };
+    struct TPipe_Record
+    {
+        CPipe pipe;
+        char name[Max_Pipe_Name_Length];
+        unsigned int alloc_count;
+    };
 
-        struct TOpened_File_Record
-        {
-            TOpened_File_Record *next;
-            char *filepath;
-            uint32_t pid;
-            uint32_t file_descriptor;
-        };
+    struct TShared_Memory_Record
+    {
+        CShared_Memory mem;
+        char name[Max_Shared_Memory_Name_Length];
+        unsigned int alloc_count;
+    };
 
-        TMutex_Record mMutexes[Mutex_Count];
-        TSemaphore_Record mSemaphores[Semaphore_Count];
-        TCond_Var_Record mCondVars[Cond_Var_Count];
-        TPipe_Record mPipes[Pipe_Count];
+    TMutex_Record mMutexes[Mutex_Count];
+    TSemaphore_Record mSemaphores[Semaphore_Count];
+    TCond_Var_Record mCondVars[Cond_Var_Count];
+    TPipe_Record mPipes[Pipe_Count];
+    TShared_Memory_Record mShared_Memory_Records[Shared_Memory_Count];
 
-        TOpened_File_Record *first_record;
+public:
+    CProcess_Resource_Manager();
+    ~CProcess_Resource_Manager();
 
-    public:
-        CProcess_Resource_Manager();
-        ~CProcess_Resource_Manager();
+    CMutex *Alloc_Mutex(const char *name);
+    void Free_Mutex(CMutex *mtx);
 
-        CMutex* Alloc_Mutex(const char* name);
-        void Free_Mutex(CMutex* mtx);
+    CSemaphore *Alloc_Semaphore(const char *name, uint32_t initial_res_count = Semaphore_Initial_Res_Count_Unknown);
+    void Free_Semaphore(CSemaphore *sem);
 
-        CSemaphore* Alloc_Semaphore(const char* name, uint32_t initial_res_count = Semaphore_Initial_Res_Count_Unknown);
-        void Free_Semaphore(CSemaphore* sem);
+    CCondition_Variable *Alloc_Condition_Variable(const char *name);
+    void Free_Condition_Variable(CCondition_Variable *cv);
 
-        CCondition_Variable* Alloc_Condition_Variable(const char* name);
-        void Free_Condition_Variable(CCondition_Variable* cv);
+    CPipe *Alloc_Pipe(const char *name, uint32_t pipe_size);
+    void Free_Pipe(CPipe *pipe);
 
-        CPipe* Alloc_Pipe(const char* name, uint32_t pipe_size);
-        void Free_Pipe(CPipe* pipe);
-
-        bool Register_New_File(const char *filepath, const uint32_t pid, const uint32_t fd);
-        const char *Find_Registerd_File(const uint32_t pid, const uint32_t fd);
+    CShared_Memory *Alloc_Shared_Memory(const char *name);
 };
 
 extern CProcess_Resource_Manager sProcess_Resource_Manager;
