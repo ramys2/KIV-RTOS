@@ -180,7 +180,8 @@ shmmem::TShared_Memory_Record *shmmem::CShared_Memory_Manager::Alloc_New_Record(
     }
 
     strncpy(new_record->name, filepath, filepath_len);
-    new_record->phys_address = reinterpret_cast<uint32_t>(frame_phys_addrs);
+    new_record->phys_address = frame_phys_addrs;
+    new_record->rc = 0;
 
     return new_record;
 }
