@@ -56,21 +56,24 @@ int main(int argc, char **argv)
     // 	sleep(0x4000, 0x800); // TODO: z tohohle bude casem cekani na podminkove promenne (na eventu) s timeoutem
     // }
 
-    uint32_t memfile = open("SYS:shm/my_shared_memory", NFile_Open_Mode::Read_Write);
+    uint32_t memfile = open("SYS:shm/my_memory", NFile_Open_Mode::Read_Write);
     char *mem = mmap(0x100000, memfile);
+    mem[10] = 'a';
 
-    char c[2];
-    c[1] = '\0';
+    mutex_t m = mutex_create("shm_mut");
+
     while (true)
     {
-        c[0] = mem[10];
-        if (c[0] == 'b')
+        mutex_lock(m);
+        if (mem[10] == 'b')
         {
             mem[10] = 'a';
         }
+        mutex_unlock(m);
     }
 
     // free(mem);
+    mutex_destroy(m);
     close(memfile);
 
     return 0;

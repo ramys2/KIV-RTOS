@@ -2,6 +2,7 @@
 
 #include <hal/peripherals.h>
 #include <hal/intdef.h>
+#include <process/resource_manager.h>
 
 #include "fs/filesystem.h"
 
@@ -193,19 +194,8 @@ void map_memory(uint32_t* target_pt, uint32_t phys, uint32_t virt);
 
 namespace shmmem
 {
-    struct TShared_Memory_Record
-    {
-        TShared_Memory_Record *next;
-        char *name;
-        uint32_t phys_address;
-        uint32_t rc;
-    };
-
     class CShared_Memory_Manager
     {
-        private:
-            TShared_Memory_Record *first_record;
-
         public:
             CShared_Memory_Manager();
             ~CShared_Memory_Manager();
@@ -213,21 +203,13 @@ namespace shmmem
             char *Map_File(const uint32_t requested_size, const uint32_t fd);
 
         private:
-            TShared_Memory_Record *Memory_Exists(const char *filepath);
             /*
             Zavola process manazera a pomoci predaneho file descriptoru se pokusi od prave beziciho procesu ziskat otevreny soubor.
             Pokud neexistuje vraci nullptr.
             */
             const IFile *Retrieve_File(const uint32_t fd);
 
-            /*
-            Zavola resource manazera a pokusi se od nej ziskat jmeno souboru, ktere by melo byt zavedeno pri otevreni filu.
-            */
-            const char *Retrieve_Filepath(const uint32_t fd);
-
-            TShared_Memory_Record *Alloc_New_Record(const char *filepath, const uint32_t frame_phys_addrs);
-
-            char *Map_To_Process_Page(const TShared_Memory_Record *record);
+            char *Map_To_Process_Page(const uint32_t phys_addrs);
     };
 }
 

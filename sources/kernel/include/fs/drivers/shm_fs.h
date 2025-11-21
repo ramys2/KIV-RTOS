@@ -36,8 +36,12 @@ public:
                 continue;
             }
 
-            memname[memname_idx] = path[i];
-            memname_idx++;
+            memname[memname_idx++] = path[i];
+        }
+
+        if (memname[0] == '\0')
+        {
+            return nullptr;
         }
 
         return sProcess_Resource_Manager.Alloc_Shared_Memory(memname);

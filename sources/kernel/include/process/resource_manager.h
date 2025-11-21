@@ -97,6 +97,7 @@ public:
     void Free_Pipe(CPipe *pipe);
 
     CShared_Memory *Alloc_Shared_Memory(const char *name);
+    CShared_Memory *Get_Shared_Memory(const IFile *file);
 };
 
 extern CProcess_Resource_Manager sProcess_Resource_Manager;

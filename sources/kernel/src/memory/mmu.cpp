@@ -72,49 +72,25 @@ char *shmmem::CShared_Memory_Manager::Map_File(const uint32_t requested_size, co
         return nullptr;
     }
 
-    // pokusime se ziskat jmeno souboru u resource manazera u kteroho se mel zaregistrovat
-    const char *filepath = this->Retrieve_Filepath(fd);
-    if (!filepath)
+    CShared_Memory *memory = sProcess_Resource_Manager.Get_Shared_Memory(file);
+    if (!memory)
     {
         return nullptr;
     }
 
-    shmmem::TShared_Memory_Record *record = this->Memory_Exists(filepath);
-    if (!record)
+    uint32_t phys_addrs = memory->Get_Phys_Addrs();
+    if (phys_addrs == 0)
     {
-        // Pokud jeste neexistuje zaznam, ze by pamet byla sdilena
-        // Alokujeme novnou stranku
-        uint32_t frame_virt_addrs = sPage_Manager.Alloc_Page();
-        
-        // Vytvorime novy zaznam do seznamu
-        record = this->Alloc_New_Record(filepath, frame_virt_addrs - mem::MemoryVirtualBase);
-        if (!record)
+        uint32_t virt_addrs = sPage_Manager.Alloc_Page();
+        if (virt_addrs == 0)
         {
             return nullptr;
         }
+        phys_addrs = virt_addrs - mem::MemoryVirtualBase;
+        memory->Set_Phys_Addrs(phys_addrs);
     }
 
-    char *final_addrs = Map_To_Process_Page(record);
-    if (final_addrs)
-    {
-        record->rc++;
-        if (record->rc == 1)
-        {
-            record->next = first_record;
-            first_record = record;
-        }
-    }
-    else
-    {
-        if (record->rc == 0)
-        {
-            sPage_Manager.Free_Page(record->phys_address + mem::MemoryVirtualBase);
-            delete record->name;
-            delete record;
-        }
-    }
-
-    return final_addrs;
+    return this->Map_To_Process_Page(phys_addrs);;
 }
 
 const IFile *shmmem::CShared_Memory_Manager::Retrieve_File(const uint32_t fd)
@@ -130,69 +106,8 @@ const IFile *shmmem::CShared_Memory_Manager::Retrieve_File(const uint32_t fd)
     return task->opened_files[fd];
 }
 
-const char *shmmem::CShared_Memory_Manager::Retrieve_Filepath(const uint32_t fd)
+char *shmmem::CShared_Memory_Manager::Map_To_Process_Page(const uint32_t phys_addrs)
 {
-    TTask_Struct *current = sProcessMgr.Get_Current_Process();
-    // pro jistotu, kdyby soucasny process byl null nebo fd prekracoval maximalni pocet otevrenych souboru
-    if (!current || fd >= Max_Process_Opened_Files)
-    {
-        return nullptr;
-    }
-
-    return sProcess_Resource_Manager.Find_Registerd_File(current->pid, fd);
-}
-
-shmmem::TShared_Memory_Record *shmmem::CShared_Memory_Manager::Memory_Exists(const char *filepath)
-{
-    shmmem::TShared_Memory_Record *current = this->first_record;
-
-    while (current != nullptr)
-    {
-        if (strncmp(filepath, current->name, strlen(filepath) + 1) == 0)
-        {
-            return current;
-        }
-        current = current->next;
-    }
-
-    return nullptr;
-}
-
-shmmem::TShared_Memory_Record *shmmem::CShared_Memory_Manager::Alloc_New_Record(const char *filepath, const uint32_t frame_phys_addrs)
-{
-    if (!filepath)
-    {
-        return nullptr;
-    }
-
-    TShared_Memory_Record *new_record = new TShared_Memory_Record();
-    if (!new_record)
-    {
-        return nullptr;
-    }
-
-    int filepath_len = strlen(filepath) + 1;
-    new_record->name = new char[filepath_len];
-    if (!new_record->name)
-    {
-        delete new_record;
-        return nullptr;
-    }
-
-    strncpy(new_record->name, filepath, filepath_len);
-    new_record->phys_address = frame_phys_addrs;
-    new_record->rc = 0;
-
-    return new_record;
-}
-
-char *shmmem::CShared_Memory_Manager::Map_To_Process_Page(const shmmem::TShared_Memory_Record *record)
-{
-    if (!record)
-    {
-        return nullptr;
-    }
-
     TTask_Struct *current = sProcessMgr.Get_Current_Process();
     if (!current)
     {
@@ -207,7 +122,7 @@ char *shmmem::CShared_Memory_Manager::Map_To_Process_Page(const shmmem::TShared_
     {
         if (((pt_virt_addrs[i] & 0b11U) | DL1_Flags::Access_Type_Translation_Fault) == 0)
         {
-            pt_virt_addrs[i] = (record->phys_address & 0xFFF00000)
+            pt_virt_addrs[i] = (phys_addrs & 0xFFF00000)
             | DL1_Flags::Access_Type_Section_Address
             | DL1_Flags::Bufferable
             | DL1_Flags::Cacheable

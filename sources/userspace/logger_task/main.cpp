@@ -10,11 +10,11 @@
  * Prijima vsechny udalosti od ostatnich tasku a oznamuje je skrz UART hostiteli
  **/
 
-static void fputs(uint32_t file, const char *string)
-{
-    write(file, string, strlen(string));
-    write(file, "\n", 1);
-}
+// static void fputs(uint32_t file, const char *string)
+// {
+//     write(file, string, strlen(string));
+//     write(file, "\n", 1);
+// }
 
 int main(int argc, char **argv)
 {
@@ -51,25 +51,28 @@ int main(int argc, char **argv)
     params.char_length = NUART_Char_Length::Char_8;
     ioctl(uart_file, NIOCtl_Operation::Set_Params, &params);
 
-    fputs(uart_file, "UART Task A starting!");
+    write(uart_file, "UART Task A starting!", 21);
 
-    uint32_t memfile = open("SYS:shm/my_shared_memory", NFile_Open_Mode::Read_Write);
+    uint32_t memfile = open("SYS:shm/my_memory", NFile_Open_Mode::Read_Write);
     char *mem = mmap(0x100000, memfile);
-    mem[10] = 'a';
+    mem[10] = 'b';
 
-    char c[2];
-    c[1] = '\0';
+    mutex_t m = mutex_create("shm_mut");
+
     while (true)
     {
-        c[0] = mem[10];
-        if (c[0] == 'a')
+        mutex_lock(m);
+        if (mem[10] == 'a')
         {
-            fputs(uart_file, c);
+            char *c = &mem[10];
+            write(uart_file, c, 1);
             mem[10] = 'b';
         }
+        mutex_unlock(m);
     }
 
     // // free(mem);
+    mutex_destroy(m);
     close(memfile);
     close(uart_file);
 

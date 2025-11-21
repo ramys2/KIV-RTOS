@@ -214,6 +214,7 @@ CShared_Memory *CProcess_Resource_Manager::Alloc_Shared_Memory(const char *name)
         }
     }
 
+
     for (uint32_t i = 0; i < Shared_Memory_Count; i++)
     {
         if (mShared_Memory_Records[i].alloc_count == 0)
@@ -222,6 +223,20 @@ CShared_Memory *CProcess_Resource_Manager::Alloc_Shared_Memory(const char *name)
 
             strncpy(mShared_Memory_Records[i].name, name, Max_Shared_Memory_Name_Length);
             mShared_Memory_Records[i].alloc_count++;
+            return &mShared_Memory_Records[i].mem;
+        }
+    }
+
+    return nullptr;
+}
+
+CShared_Memory *CProcess_Resource_Manager::Get_Shared_Memory(const IFile *file)
+{
+    for (uint32_t i = 0; i < Shared_Memory_Count; i++)
+    {
+        // Myslim, ze tohle asi uplne fungovat nebude
+        if (&mShared_Memory_Records[i].mem == file)
+        {
             return &mShared_Memory_Records[i].mem;
         }
     }

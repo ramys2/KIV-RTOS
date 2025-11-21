@@ -12,6 +12,8 @@ public:
     ~CShared_Memory();
 
     void Reset();
+    uint32_t Get_Phys_Addrs() const;
+    void Set_Phys_Addrs(uint32_t phys_addrs);
 
     virtual uint32_t Read(char *buffer, uint32_t num) override;
     virtual uint32_t Write(const char *buffer, uint32_t num) override;
