@@ -197,7 +197,15 @@ void CProcess_Resource_Manager::Free_Pipe(CPipe* pipe)
 
 CShared_Memory *CProcess_Resource_Manager::Alloc_Memory_File(const char* name)
 {
-    strncpy(memory_record.name, name, Max_Memory_Name_Length);
+    if (memory_record.name[0] == '\0')
+    {
+        strncpy(memory_record.name, name, Max_Memory_Name_Length);
+    }
     memory_record.alloc_count++;
+    return &memory_record.memory;
+}
+
+CShared_Memory *CProcess_Resource_Manager::Get_Shared_Memory()
+{
     return &memory_record.memory;
 }

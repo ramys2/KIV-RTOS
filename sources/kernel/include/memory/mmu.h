@@ -188,3 +188,5 @@ extern "C" void mmu_invalidate_tlb();
 void copy_kernel_page_table_to(uint32_t* target);
 // namapuje do zadane tabulky dane adresy; pro ted jde jen o stranky velikosti 1MB
 void map_memory(uint32_t* target_pt, uint32_t phys, uint32_t virt);
+
+uint32_t alloc_shm(uint32_t file);

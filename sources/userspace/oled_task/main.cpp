@@ -53,20 +53,37 @@ int main(int argc, char** argv)
 	// 	sleep(0x4000, 0x800); // TODO: z tohohle bude casem cekani na podminkove promenne (na eventu) s timeoutem
 	// }
 
-    uint32_t uart_file = open("DEV:uart/0", NFile_Open_Mode::Write_Only);
+    // uint32_t uart_file = open("DEV:uart/0", NFile_Open_Mode::Write_Only);
 
-	TUART_IOCtl_Params params;
-	params.baud_rate = NUART_Baud_Rate::BR_115200;
-	params.char_length = NUART_Char_Length::Char_8;
-	ioctl(uart_file, NIOCtl_Operation::Set_Params, &params);
+	// TUART_IOCtl_Params params;
+	// params.baud_rate = NUART_Baud_Rate::BR_115200;
+	// params.char_length = NUART_Char_Length::Char_8;
+	// ioctl(uart_file, NIOCtl_Operation::Set_Params, &params);
 
-	fputs(uart_file, "UART task starting!");
+	// fputs(uart_file, "UART task starting!");
 
+    // char out[32];
+    // memset(out, '\0', 32);
+    // itoa(memfile, out, 10);
+    // fputs(uart_file, out);
+    
+    // char *mem = mmap(0x100000, memfile);
+    // memset(out, '\0', 32);
+    // itoa(reinterpret_cast<uint32_t>(mem), out, 16);
+    // fputs(uart_file, out);
+    
     uint32_t memfile = open("SYS:shm/mem", NFile_Open_Mode::Read_Write);
-    char out[32];
-    memset(out, '\0', 32);
-    itoa(memfile, out, 10);
-    fputs(uart_file, out);
+    char *mem = mmap(0x100000, memfile);
+
+    mem[10] = 'b';
+
+    while(true)
+    {
+        if (mem[10] == 'b')
+        {
+            mem[10] = 'a';
+        }
+    }
 
     return 0;
 }

@@ -32,6 +32,25 @@ int main(int argc, char** argv)
     itoa(memfile, out, 10);
     fputs(uart_file, out);
 
+    char *mem = mmap(0x100000, memfile);
+    memset(out, '\0', 32);
+    itoa(reinterpret_cast<uint32_t>(mem), out, 16);
+    fputs(uart_file, out);
+
+    mem[10] = 'a';
+
+    while(true)
+    {
+        if (mem[10] == 'a')
+        {
+            char c[2];
+            c[1] = '\0';
+            c[0] = mem[10];
+            fputs(uart_file, c);
+            mem[10] = 'b';
+        }
+    }
+
 	// char buf[16];
 	// char tickbuf[16];
 	// bzero(buf, 16);
