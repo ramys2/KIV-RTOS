@@ -96,6 +96,8 @@ enum class NSWI_Filesystem_Service
     // IN:  r0 = handle otevreneho souboru, r1 = pocet zdroju, r2 = nova deadline po probuzeni (nebo Deadline_Unchanged pokud se nema menit, nebo Indefinite pokud se ma zrusit)
     // OUT: r0 = indikator uspechu (NSWI_Result_Code)
     Wait            = 6,
+
+    MemMap          = 7,
 };
 
 // mozne IOCtl operace nad souborem

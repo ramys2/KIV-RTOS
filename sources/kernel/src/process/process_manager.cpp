@@ -400,6 +400,11 @@ void CProcess_Manager::Handle_Filesystem_SWI(NSWI_Filesystem_Service svc_idx, ui
             mCurrent_Task_Node->task->notified_deadline = Deadline_Unchanged;
             break;
         }
+        case NSWI_Filesystem_Service::MemMap:
+        {
+
+            break;
+        }
     }
 }
 
