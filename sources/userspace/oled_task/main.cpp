@@ -23,30 +23,50 @@ const char* messages[] = {
 	"Old MacDonald had a farm, EIGRP",
 };
 
+static void fputs(uint32_t file, const char* string)
+{
+	write(file, string, strlen(string));
+}
+
 int main(int argc, char** argv)
 {
-	COLED_Display disp("DEV:oled");
-	disp.Clear(false);
-	disp.Put_String(10, 10, "KIV-RTOS init...");
-	disp.Flip();
+	// COLED_Display disp("DEV:oled");
+	// disp.Clear(false);
+	// disp.Put_String(10, 10, "KIV-RTOS init...");
+	// disp.Flip();
 
-	uint32_t trng_file = open("DEV:trng", NFile_Open_Mode::Read_Only);
-	uint32_t num = 0;
+	// uint32_t trng_file = open("DEV:trng", NFile_Open_Mode::Read_Only);
+	// uint32_t num = 0;
 
-	sleep(0x800, 0x800);
+	// sleep(0x800, 0x800);
 
-	while (true)
-	{
-		// ziskame si nahodne cislo a vybereme podle toho zpravu
-		read(trng_file, reinterpret_cast<char*>(&num), sizeof(num));
-		const char* msg = messages[num % (sizeof(messages) / sizeof(const char*))];
+	// while (true)
+	// {
+	// 	// ziskame si nahodne cislo a vybereme podle toho zpravu
+	// 	read(trng_file, reinterpret_cast<char*>(&num), sizeof(num));
+	// 	const char* msg = messages[num % (sizeof(messages) / sizeof(const char*))];
 
-		disp.Clear(false);
-		disp.Put_String(0, 0, msg);
-		disp.Flip();
+	// 	disp.Clear(false);
+	// 	disp.Put_String(0, 0, msg);
+	// 	disp.Flip();
 
-		sleep(0x4000, 0x800); // TODO: z tohohle bude casem cekani na podminkove promenne (na eventu) s timeoutem
-	}
+	// 	sleep(0x4000, 0x800); // TODO: z tohohle bude casem cekani na podminkove promenne (na eventu) s timeoutem
+	// }
+
+    uint32_t uart_file = open("DEV:uart/0", NFile_Open_Mode::Write_Only);
+
+	TUART_IOCtl_Params params;
+	params.baud_rate = NUART_Baud_Rate::BR_115200;
+	params.char_length = NUART_Char_Length::Char_8;
+	ioctl(uart_file, NIOCtl_Operation::Set_Params, &params);
+
+	fputs(uart_file, "UART task starting!");
+
+    uint32_t memfile = open("SYS:shm/mem", NFile_Open_Mode::Read_Write);
+    char out[32];
+    memset(out, '\0', 32);
+    itoa(memfile, out, 10);
+    fputs(uart_file, out);
 
     return 0;
 }

@@ -26,31 +26,37 @@ int main(int argc, char** argv)
 
 	fputs(uart_file, "UART task starting!");
 
-	char buf[16];
-	char tickbuf[16];
-	bzero(buf, 16);
-	bzero(tickbuf, 16);
+    uint32_t memfile = open("SYS:shm/mem", NFile_Open_Mode::Read_Write);
+    char out[32];
+    memset(out, '\0', 32);
+    itoa(memfile, out, 10);
+    fputs(uart_file, out);
 
-	uint32_t last_tick = 0;
+	// char buf[16];
+	// char tickbuf[16];
+	// bzero(buf, 16);
+	// bzero(tickbuf, 16);
 
-	uint32_t logpipe = pipe("log", 32);
+	// uint32_t last_tick = 0;
 
-	while (true)
-	{
-		wait(logpipe, 1, 0x1000);
+	// uint32_t logpipe = pipe("log", 32);
 
-		uint32_t v = read(logpipe, buf, 15);
-		if (v > 0)
-		{
-			buf[v] = '\0';
-			fputs(uart_file, "\r\n[ ");
-			uint32_t tick = get_tick_count();
-			itoa(tick, tickbuf, 16);
-			fputs(uart_file, tickbuf);
-			fputs(uart_file, "]: ");
-			fputs(uart_file, buf);
-		}
-	}
+	// while (true)
+	// {
+	// 	wait(logpipe, 1, 0x1000);
+
+	// 	uint32_t v = read(logpipe, buf, 15);
+	// 	if (v > 0)
+	// 	{
+	// 		buf[v] = '\0';
+	// 		fputs(uart_file, "\r\n[ ");
+	// 		uint32_t tick = get_tick_count();
+	// 		itoa(tick, tickbuf, 16);
+	// 		fputs(uart_file, tickbuf);
+	// 		fputs(uart_file, "]: ");
+	// 		fputs(uart_file, buf);
+	// 	}
+	// }
 
     return 0;
 }

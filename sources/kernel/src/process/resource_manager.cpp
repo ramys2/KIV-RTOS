@@ -10,6 +10,9 @@ CProcess_Resource_Manager::CProcess_Resource_Manager()
         mMutexes[i].name[0] = '\0';
         mMutexes[i].alloc_count = 0;
     }
+
+    memory_record.alloc_count = 0;
+    memory_record.name[0] = '\0';
 }
 
 CProcess_Resource_Manager::~CProcess_Resource_Manager()
@@ -190,4 +193,11 @@ void CProcess_Resource_Manager::Free_Pipe(CPipe* pipe)
             return;
         }
     }
+}
+
+CShared_Memory *CProcess_Resource_Manager::Alloc_Memory_File(const char* name)
+{
+    strncpy(memory_record.name, name, Max_Memory_Name_Length);
+    memory_record.alloc_count++;
+    return &memory_record.memory;
 }
