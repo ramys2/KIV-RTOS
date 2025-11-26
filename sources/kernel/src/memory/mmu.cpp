@@ -3,7 +3,7 @@
 #include <process/process_manager.h>
 #include <process/resource_manager.h>
 #include <memory/pages.h>
-#include <uart.h>
+#include <drivers/uart.h>
 
 extern volatile __attribute__((section(".initsys.data"))) uint32_t Page_Directory_Kernel[PT_Size];
 
@@ -65,35 +65,38 @@ uint32_t alloc_shm(uint32_t file)
         return 0;
     }
 
+    // sUART0.Write(current->pid);
+    // sUART0.Write('\n');
     CShared_Memory *record = sProcess_Resource_Manager.Get_Shared_Memory();
 
     uint32_t phys_addrs = record->Get_Phys_Addrs();
+    // sUART0.Write_Hex(phys_addrs);
+    // sUART0.Write('\n');
     if (phys_addrs == 0)
     {
-        uint32_t new_virt_addrs = sPage_Manager.Alloc_Page();
-        phys_addrs = new_virt_addrs - mem::MemoryVirtualBase;
+        // uint32_t new_virt_addrs = sPage_Manager.Alloc_Page();
+        // phys_addrs = new_virt_addrs - mem::MemoryVirtualBase;
+        phys_addrs = 0x09000000;
         record->Set_Phys_Addrs(phys_addrs);
     }
+    // sUART0.Write_Hex(phys_addrs);
+    // sUART0.Write('\n');
 
-    unsigned long pt_phys_addrs = current->cpu_context.ttbr0 & ~ 0x3F;
-    
-    uint32_t *pt_virt_addrs = reinterpret_cast<uint32_t *>(pt_phys_addrs + mem::MemoryVirtualBase);
+    unsigned long pt_phys_addrs = current->cpu_context.ttbr0 & (~ 0x3FFF); //(~ 0x3F)
+    // sUART0.Write_Hex((uint32_t)(pt_phys_addrs));
+    // sUART0.Write('\n');
+    volatile uint32_t *pt_virt_addrs = reinterpret_cast<volatile uint32_t *>(pt_phys_addrs + mem::MemoryVirtualBase);
 
-    for (uint32_t i = 0; i < PT_Size; i++)
-    {
-        if (((pt_virt_addrs[i] & 0b11U) | DL1_Flags::Access_Type_Translation_Fault) == 0)
-        {
-            pt_virt_addrs[i] = (phys_addrs & 0xFFF00000)
-            | DL1_Flags::Access_Type_Section_Address
-            | DL1_Flags::Bufferable
-            | DL1_Flags::Cacheable
-            | DL1_Flags::Shareable
-            | DL1_Flags::Access_Full_RW;
+    pt_virt_addrs[PT_Entry(0x70000000)] = (phys_addrs & 0xFFF00000)
+                | DL1_Flags::Access_Type_Translation_Fault
+                | DL1_Flags::Bufferable
+                | DL1_Flags::Cacheable
+                | DL1_Flags::Shareable
+                | DL1_Flags::Domain_0
+                | DL1_Flags::Access_Full_RW;
 
-            mmu_invalidate_tlb();
-            return i * mem::PageSize;
-        }
-    }
+    mmu_invalidate_tlb();
 
-    return 0;
+    // sUART0.Write_Hex(0x50000000);
+    return 0x70000000;
 }
