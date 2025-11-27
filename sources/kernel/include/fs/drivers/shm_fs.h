@@ -17,4 +17,4 @@ class CShm_FS_Driver : public IFilesystem_Driver
         }
 };
 
-CShm_FS_Driver sShm_FS_Driver;
+CShm_FS_Driver fsShm_FS_Driver;

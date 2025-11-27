@@ -28,7 +28,7 @@ const CFilesystem::TFS_Driver CFilesystem::gFS_Drivers[] = {
     { "Semaphore", "SYS:sem", &fsSemaphore_FS_Driver },
     { "CondVar", "SYS:cv", &fsCond_Var_FS_Driver },
     { "Pipe", "SYS:pipe", &fsPipe_FS_Driver },
-    { "SharedMem", "SYS:shm", &sShm_FS_Driver},
+    { "SharedMem", "SYS:shm", &fsShm_FS_Driver},
 };
 
 // pocet FS driveru - je staticky spocitan z velikosti vyse uvedeneho pole
