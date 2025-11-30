@@ -82,7 +82,7 @@ uint32_t map_shm(uint32_t file)
 
     for (uint32_t i = 0; i < PT_Size; i++)
     {
-        if (((pt_virt_addrs[i] & 0b11U) | DL1_Flags::Access_Type_Translation_Fault) == 0)
+        if ((pt_virt_addrs[i] & 0b11U) == DL1_Flags::Access_Type_Translation_Fault)
         {
             pt_virt_addrs[i] = (phys_addrs & 0xFFF00000)
                         | DL1_Flags::Access_Type_Section_Address
