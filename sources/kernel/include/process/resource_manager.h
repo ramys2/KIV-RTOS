@@ -95,8 +95,7 @@ class CProcess_Resource_Manager
         CPipe* Alloc_Pipe(const char* name, uint32_t pipe_size);
         void Free_Pipe(CPipe* pipe);
 
-        CShared_Memory *Alloc_Memory_File(const char* name);
-        CShared_Memory *Get_Shared_Memory(uint32_t file);
+        CShared_Memory *Alloc_Shm_File(const char* name);
 };
 
 extern CProcess_Resource_Manager sProcess_Resource_Manager;

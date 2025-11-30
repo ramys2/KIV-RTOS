@@ -13,7 +13,7 @@ class CShm_FS_Driver : public IFilesystem_Driver
 
         virtual IFile *Open_File(const char* path, NFile_Open_Mode mode) override
         {
-            return sProcess_Resource_Manager.Alloc_Memory_File(path);
+            return sProcess_Resource_Manager.Alloc_Shm_File(path);
         }
 };
 

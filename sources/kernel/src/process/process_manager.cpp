@@ -402,7 +402,7 @@ void CProcess_Manager::Handle_Filesystem_SWI(NSWI_Filesystem_Service svc_idx, ui
         }
         case NSWI_Filesystem_Service::MemMap:
         {
-            uint32_t res_addrs = alloc_shm(r1);
+            uint32_t res_addrs = map_shm(r1);
             if (res_addrs == 0)
             {
                 return;

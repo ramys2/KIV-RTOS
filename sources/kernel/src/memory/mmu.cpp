@@ -57,7 +57,7 @@ void map_memory(uint32_t* target_pt, uint32_t phys, uint32_t virt)
             | DL1_Flags::Shareable;
 }
 
-uint32_t alloc_shm(uint32_t file)
+uint32_t map_shm(uint32_t file)
 {
     TTask_Struct *current = sProcessMgr.Get_Current_Process();
     if(!current)
@@ -65,26 +65,19 @@ uint32_t alloc_shm(uint32_t file)
         return 0;
     }
 
-    // sUART0.Write(current->pid);
-    // sUART0.Write('\n');
-    CShared_Memory *record = sProcess_Resource_Manager.Get_Shared_Memory(file);
+    if (!current->opened_files[file] || current->opened_files[file]->Get_File_Type() != NFile_Type_Major::Shm_File)
+    {
+        return 0;
+    }
 
+    CShared_Memory *record = static_cast<CShared_Memory *>(current->opened_files[file]);
     uint32_t phys_addrs = record->Get_Phys_Addrs();
-    // sUART0.Write_Hex(phys_addrs);
-    // sUART0.Write('\n');
     if (phys_addrs == 0)
     {
-        // uint32_t new_virt_addrs = sPage_Manager.Alloc_Page();
-        // phys_addrs = new_virt_addrs - mem::MemoryVirtualBase;
-        phys_addrs = 0x09000000;
-        record->Set_Phys_Addrs(phys_addrs);
+        return 0;
     }
-    // sUART0.Write_Hex(phys_addrs);
-    // sUART0.Write('\n');
 
-    unsigned long pt_phys_addrs = current->cpu_context.ttbr0 & (~ 0x3FFF); //(~ 0x3F)
-    // sUART0.Write_Hex((uint32_t)(pt_phys_addrs));
-    // sUART0.Write('\n');
+    unsigned long pt_phys_addrs = current->cpu_context.ttbr0 & (~ 0x3FFF);
     volatile uint32_t *pt_virt_addrs = reinterpret_cast<volatile uint32_t *>(pt_phys_addrs + mem::MemoryVirtualBase);
 
     pt_virt_addrs[PT_Entry(0x70000000)] = (phys_addrs & 0xFFF00000)
@@ -97,6 +90,5 @@ uint32_t alloc_shm(uint32_t file)
 
     mmu_invalidate_tlb();
 
-    // sUART0.Write_Hex(0x50000000);
     return 0x70000000;
 }
