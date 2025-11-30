@@ -205,7 +205,7 @@ CShared_Memory *CProcess_Resource_Manager::Alloc_Memory_File(const char* name)
     return &memory_record.memory;
 }
 
-CShared_Memory *CProcess_Resource_Manager::Get_Shared_Memory()
+CShared_Memory *CProcess_Resource_Manager::Get_Shared_Memory(uint32_t file)
 {
     return &memory_record.memory;
 }

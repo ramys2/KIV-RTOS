@@ -67,7 +67,7 @@ uint32_t alloc_shm(uint32_t file)
 
     // sUART0.Write(current->pid);
     // sUART0.Write('\n');
-    CShared_Memory *record = sProcess_Resource_Manager.Get_Shared_Memory();
+    CShared_Memory *record = sProcess_Resource_Manager.Get_Shared_Memory(file);
 
     uint32_t phys_addrs = record->Get_Phys_Addrs();
     // sUART0.Write_Hex(phys_addrs);
@@ -88,7 +88,7 @@ uint32_t alloc_shm(uint32_t file)
     volatile uint32_t *pt_virt_addrs = reinterpret_cast<volatile uint32_t *>(pt_phys_addrs + mem::MemoryVirtualBase);
 
     pt_virt_addrs[PT_Entry(0x70000000)] = (phys_addrs & 0xFFF00000)
-                | DL1_Flags::Access_Type_Translation_Fault
+                | DL1_Flags::Access_Type_Section_Address
                 | DL1_Flags::Bufferable
                 | DL1_Flags::Cacheable
                 | DL1_Flags::Shareable

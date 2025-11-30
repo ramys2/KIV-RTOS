@@ -62,6 +62,9 @@ int main(int argc, char** argv)
 
 	// fputs(uart_file, "UART task starting!");
 
+    uint32_t memfile = open("SYS:shm/mem", NFile_Open_Mode::Read_Write);
+    volatile char *mem = mmap(0x100000, memfile);
+
     // char out[32];
     // memset(out, '\0', 32);
     // itoa(memfile, out, 10);
@@ -71,18 +74,25 @@ int main(int argc, char** argv)
     // memset(out, '\0', 32);
     // itoa(reinterpret_cast<uint32_t>(mem), out, 16);
     // fputs(uart_file, out);
-    
-    uint32_t memfile = open("SYS:shm/mem", NFile_Open_Mode::Read_Write);
-    char *mem = mmap(0x100000, memfile);
+    // uint32_t counter = 1;
+    // uint32_t led = open("DEV:gpio/18", NFile_Open_Mode::Write_Only);
 
-    mem[10] = 'b';
-
+    mem[5] = 'a';
+    mem[10] = 'a';
     while(true)
     {
         if (mem[10] == 'b')
         {
+            // char c[2];
+            // c[1] = '\0';
+            // c[0] = mem[10];
+            // fputs(uart_file, c);
+            // fputs(uart_file, "\n");
             mem[10] = 'a';
         }
+        sleep(1000);
+        // counter++;
+        // write(led, counter & 1 ? "1" : "0", 1);
     }
 
     return 0;
