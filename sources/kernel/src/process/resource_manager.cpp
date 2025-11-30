@@ -1,5 +1,6 @@
 #include <process/resource_manager.h>
 #include <stdstring.h>
+#include <memory/pages.h>
 
 CProcess_Resource_Manager sProcess_Resource_Manager;
 
@@ -10,6 +11,9 @@ CProcess_Resource_Manager::CProcess_Resource_Manager()
         mMutexes[i].name[0] = '\0';
         mMutexes[i].alloc_count = 0;
     }
+
+    memory_record.alloc_count = 0;
+    memory_record.name[0] = '\0';
 }
 
 CProcess_Resource_Manager::~CProcess_Resource_Manager()
@@ -190,4 +194,18 @@ void CProcess_Resource_Manager::Free_Pipe(CPipe* pipe)
             return;
         }
     }
+}
+
+CShared_Memory *CProcess_Resource_Manager::Alloc_Shm_File(const char* name)
+{
+    if (memory_record.alloc_count == 0)
+    {
+        uint32_t new_virt_addrs = sPage_Manager.Alloc_Page();
+        uint32_t phys_addrs = new_virt_addrs - mem::MemoryVirtualBase;
+        memory_record.memory.Set_Phys_Addrs(phys_addrs);
+        strncpy(memory_record.name, name, Max_Memory_Name_Length);
+    }
+
+    memory_record.alloc_count++;
+    return &memory_record.memory;
 }
