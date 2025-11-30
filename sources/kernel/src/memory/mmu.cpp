@@ -80,15 +80,22 @@ uint32_t map_shm(uint32_t file)
     unsigned long pt_phys_addrs = current->cpu_context.ttbr0 & (~ 0x3FFF);
     volatile uint32_t *pt_virt_addrs = reinterpret_cast<volatile uint32_t *>(pt_phys_addrs + mem::MemoryVirtualBase);
 
-    pt_virt_addrs[PT_Entry(0x70000000)] = (phys_addrs & 0xFFF00000)
-                | DL1_Flags::Access_Type_Section_Address
-                | DL1_Flags::Bufferable
-                | DL1_Flags::Cacheable
-                | DL1_Flags::Shareable
-                | DL1_Flags::Domain_0
-                | DL1_Flags::Access_Full_RW;
+    for (uint32_t i = 0; i < PT_Size; i++)
+    {
+        if (((pt_virt_addrs[i] & 0b11U) | DL1_Flags::Access_Type_Translation_Fault) == 0)
+        {
+            pt_virt_addrs[i] = (phys_addrs & 0xFFF00000)
+                        | DL1_Flags::Access_Type_Section_Address
+                        | DL1_Flags::Bufferable
+                        | DL1_Flags::Cacheable
+                        | DL1_Flags::Shareable
+                        | DL1_Flags::Domain_0
+                        | DL1_Flags::Access_Full_RW;
+            mmu_invalidate_tlb();
+            return i * PT_Region_Size;
+        }
+    }
 
-    mmu_invalidate_tlb();
 
-    return 0x70000000;
+    return 0;
 }
