@@ -30,16 +30,9 @@ int main(int argc, char** argv)
     // uint32_t led = open("DEV:gpio/19", NFile_Open_Mode::Write_Only);
 
     uint32_t memfile = open("SYS:shm/mem", NFile_Open_Mode::Read_Write);
-    // char out[32];
-    // memset(out, '\0', 32);
-    // itoa(memfile, out, 10);
-    // fputs(uart_file, out);
 
     volatile char *mem = mmap(0x100000, memfile);
     close(memfile);
-    // memset(out, '\0', 32);
-    // itoa(reinterpret_cast<uint32_t>(mem), out, 16);
-    // fputs(uart_file, out);
 
     mem[10] = 'a';
 

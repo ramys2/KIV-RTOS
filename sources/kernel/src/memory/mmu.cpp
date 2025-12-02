@@ -62,12 +62,12 @@ uint32_t map_shm(uint32_t file)
     TTask_Struct *current = sProcessMgr.Get_Current_Process();
     if(!current)
     {
-        return 0;
+        return -1;
     }
 
     if (!current->opened_files[file] || current->opened_files[file]->Get_File_Type() != NFile_Type_Major::Shm_File)
     {
-        return 0;
+        return -1;
     }
 
     CShared_Memory *record = static_cast<CShared_Memory *>(current->opened_files[file]);
@@ -77,7 +77,7 @@ uint32_t map_shm(uint32_t file)
         uint32_t new_virt_addrs = sPage_Manager.Alloc_Page();
         if (new_virt_addrs == 0)
         {
-            return 0;
+            return -1;
         }
         phys_addrs = new_virt_addrs - mem::MemoryVirtualBase;
         record->Set_Phys_Addrs(phys_addrs);
@@ -105,5 +105,5 @@ uint32_t map_shm(uint32_t file)
     }
 
 
-    return 0;
+    return -1;
 }
