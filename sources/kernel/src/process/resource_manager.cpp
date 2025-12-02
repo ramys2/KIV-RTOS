@@ -14,9 +14,7 @@ CProcess_Resource_Manager::CProcess_Resource_Manager()
 
     for (uint32_t i = 0; i < Shm_Count; i++)
     {
-        mShm_Records->memory.Set_Phys_Addrs(0);
         mShm_Records[i].name[0] = '\0';
-        mShm_Records[i].alloc_count = 0;
     }
 }
 
@@ -205,30 +203,20 @@ CShared_Memory *CProcess_Resource_Manager::Alloc_Shm_File(const char* name)
 
     for (uint32_t i = 0; i < Shm_Count; i++)
     {
-        if (mShm_Records->alloc_count > 0)
+        if (mShm_Records[i].memory.mMap_Count > 0)
         {
             if (strncmp(mShm_Records[i].name, name, Max_Memory_Name_Length) == 0)
             {
-                mShm_Records[i].alloc_count++;
                 return &mShm_Records[i].memory;
             }
         }
     }
 
-    uint32_t new_virt_addrs = sPage_Manager.Alloc_Page();
-    if (new_virt_addrs == 0)
-    {
-        return nullptr;
-    }
-    uint32_t phys_addrs = new_virt_addrs - mem::MemoryVirtualBase;
-
     for (uint32_t i = 0; i < Shm_Count; i++)
     {
-        if (mShm_Records[i].alloc_count == 0)
+        if (mShm_Records[i].memory.mMap_Count == 0)
         {
-            mShm_Records[i].memory.Set_Phys_Addrs(phys_addrs);
             strncpy(mShm_Records[i].name, name, Max_Memory_Name_Length);
-            mShm_Records[i].alloc_count++;
             return &mShm_Records[i].memory;
         }
     }

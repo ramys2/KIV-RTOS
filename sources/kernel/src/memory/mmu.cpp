@@ -74,8 +74,16 @@ uint32_t map_shm(uint32_t file)
     uint32_t phys_addrs = record->Get_Phys_Addrs();
     if (phys_addrs == 0)
     {
-        return 0;
+        uint32_t new_virt_addrs = sPage_Manager.Alloc_Page();
+        if (new_virt_addrs == 0)
+        {
+            return 0;
+        }
+        phys_addrs = new_virt_addrs - mem::MemoryVirtualBase;
+        record->Set_Phys_Addrs(phys_addrs);
     }
+
+    record->mMap_Count++;
 
     unsigned long pt_phys_addrs = current->cpu_context.ttbr0 & (~ 0x3FFF);
     volatile uint32_t *pt_virt_addrs = reinterpret_cast<volatile uint32_t *>(pt_phys_addrs + mem::MemoryVirtualBase);

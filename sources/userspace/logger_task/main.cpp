@@ -36,6 +36,7 @@ int main(int argc, char** argv)
     // fputs(uart_file, out);
 
     volatile char *mem = mmap(0x100000, memfile);
+    close(memfile);
     // memset(out, '\0', 32);
     // itoa(reinterpret_cast<uint32_t>(mem), out, 16);
     // fputs(uart_file, out);
