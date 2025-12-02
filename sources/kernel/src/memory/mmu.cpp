@@ -57,17 +57,22 @@ void map_memory(uint32_t* target_pt, uint32_t phys, uint32_t virt)
             | DL1_Flags::Shareable;
 }
 
-uint32_t map_shm(uint32_t file)
+uint32_t map_shm(uint32_t size, uint32_t file)
 {
+    if (size == 0 || size % mem::PageSize != 0 || file > Max_Process_Opened_Files)
+    {
+        return mem::Invalid_Virtual_Address;
+    }
+
     TTask_Struct *current = sProcessMgr.Get_Current_Process();
     if(!current)
     {
-        return -1;
+        return mem::Invalid_Virtual_Address;
     }
 
     if (!current->opened_files[file] || current->opened_files[file]->Get_File_Type() != NFile_Type_Major::Shm_File)
     {
-        return -1;
+        return mem::Invalid_Virtual_Address;
     }
 
     CShared_Memory *record = static_cast<CShared_Memory *>(current->opened_files[file]);
@@ -77,7 +82,7 @@ uint32_t map_shm(uint32_t file)
         uint32_t new_virt_addrs = sPage_Manager.Alloc_Page();
         if (new_virt_addrs == 0)
         {
-            return -1;
+            return mem::Invalid_Virtual_Address;
         }
         phys_addrs = new_virt_addrs - mem::MemoryVirtualBase;
         record->Set_Phys_Addrs(phys_addrs);
@@ -105,5 +110,5 @@ uint32_t map_shm(uint32_t file)
     }
 
 
-    return -1;
+    return mem::Invalid_Virtual_Address;
 }

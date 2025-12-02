@@ -10,7 +10,6 @@
 
 #include <fs/filesystem.h>
 
-#include <drivers/uart.h>
 #include <drivers/timer.h>
 
 // "importovane" funkce z asm
@@ -402,13 +401,7 @@ void CProcess_Manager::Handle_Filesystem_SWI(NSWI_Filesystem_Service svc_idx, ui
         }
         case NSWI_Filesystem_Service::MemMap:
         {
-            uint32_t res_addrs = map_shm(r1);
-            if (res_addrs == 0)
-            {
-                return;
-            }
-
-            target.r0 = res_addrs;
+            target.r0 = map_shm(r0, r1);
             break;
         }
     }

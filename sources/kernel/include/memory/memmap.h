@@ -25,4 +25,6 @@ namespace mem
 
     // kolik stranek vlastne muzeme pridelit?
     constexpr uint32_t PageCount = PagingMemorySize / PageSize;
+
+    constexpr uint32_t Invalid_Virtual_Address = 0xFFFF'FFFF - PageSize;
 }
