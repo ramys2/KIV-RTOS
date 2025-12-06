@@ -15,6 +15,7 @@ CProcess_Resource_Manager::CProcess_Resource_Manager()
     for (uint32_t i = 0; i < Shm_Count; i++)
     {
         mShm_Records[i].name[0] = '\0';
+        mShm_Records[i].alloc_count = 0;
     }
 }
 
@@ -201,26 +202,24 @@ void CProcess_Resource_Manager::Free_Pipe(CPipe* pipe)
 
 CShared_Memory *CProcess_Resource_Manager::Alloc_Shm_File(const char* name)
 {
-
-    // zjistime, zda uz je takovy zaznam otevreny a v pripade, ze ano, tak vratime referenci
     for (uint32_t i = 0; i < Shm_Count; i++)
     {
-        if (mShm_Records[i].memory.mMap_Count > 0)
+        if (mShm_Records[i].alloc_count > 0)
         {
             if (strncmp(mShm_Records[i].name, name, Max_Memory_Name_Length) == 0)
             {
+                mShm_Records[i].alloc_count++;
                 return &mShm_Records[i].memory;
             }
         }
     }
 
-    // pokud zaznam nebyl nalezen, tak se pokusime najit predalokovany zaznam, ktery ma mMap_Count = 0
-    // a nakopirujeme do nej nove jmeno, aby ho v budoucnu mohli otevirat i dalsi procesy
     for (uint32_t i = 0; i < Shm_Count; i++)
     {
-        if (mShm_Records[i].memory.mMap_Count == 0)
+        if (mShm_Records[i].alloc_count == 0)
         {
             strncpy(mShm_Records[i].name, name, Max_Memory_Name_Length);
+            mShm_Records[i].alloc_count++;
             return &mShm_Records[i].memory;
         }
     }

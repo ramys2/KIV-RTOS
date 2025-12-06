@@ -88,8 +88,6 @@ uint32_t map_shm(uint32_t size, uint32_t file)
         record->Set_Phys_Addrs(phys_addrs);
     }
 
-    record->mMap_Count++;
-
     unsigned long pt_phys_addrs = current->cpu_context.ttbr0 & (~ 0x3FFF);
     volatile uint32_t *pt_virt_addrs = reinterpret_cast<volatile uint32_t *>(pt_phys_addrs + mem::MemoryVirtualBase);
 

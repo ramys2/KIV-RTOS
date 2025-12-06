@@ -8,7 +8,6 @@ class CShared_Memory : public IFile
         uint32_t mPhys_Addrs;
         
         public:
-        uint32_t mMap_Count;
 
         CShared_Memory();
         ~CShared_Memory() = default;

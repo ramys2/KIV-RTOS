@@ -71,6 +71,7 @@ class CProcess_Resource_Manager
         {
             CShared_Memory memory;
             char name [Max_Memory_Name_Length];
+            unsigned int alloc_count;
         };
 
         TMutex_Record mMutexes[Mutex_Count];
