@@ -28,6 +28,7 @@ constexpr uint32_t Pipe_Count = 16;
 // maximalni delka jmena pipe
 constexpr uint32_t Max_Pipe_Name_Length = 16;
 
+constexpr uint32_t Shm_Count = 16;
 constexpr uint32_t Max_Memory_Name_Length = 16;
 
 // pri otevirani semaforu = pokud uz musel byt semafor otevreny
@@ -77,7 +78,7 @@ class CProcess_Resource_Manager
         TSemaphore_Record mSemaphores[Semaphore_Count];
         TCond_Var_Record mCondVars[Cond_Var_Count];
         TPipe_Record mPipes[Pipe_Count];
-        TShared_Memory_Record memory_record;
+        TShared_Memory_Record mShm_Records[Shm_Count];
 
     public:
         CProcess_Resource_Manager();

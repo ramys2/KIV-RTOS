@@ -1,7 +1,7 @@
 #include <process/shm.h>
 
 
-CShared_Memory::CShared_Memory() : IFile{NFile_Type_Major::Shm_File}, mPhys_addrs {0}
+CShared_Memory::CShared_Memory() : IFile{NFile_Type_Major::Shm_File}, mPhys_Addrs {0}
 {
     //
 }

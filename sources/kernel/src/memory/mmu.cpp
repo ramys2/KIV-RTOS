@@ -57,38 +57,56 @@ void map_memory(uint32_t* target_pt, uint32_t phys, uint32_t virt)
             | DL1_Flags::Shareable;
 }
 
-uint32_t map_shm(uint32_t file)
+uint32_t map_shm(uint32_t size, uint32_t file)
 {
+    if (size == 0 || size % mem::PageSize != 0 || file > Max_Process_Opened_Files)
+    {
+        return mem::Invalid_Virtual_Address;
+    }
+
     TTask_Struct *current = sProcessMgr.Get_Current_Process();
     if(!current)
     {
-        return 0;
+        return mem::Invalid_Virtual_Address;
     }
 
     if (!current->opened_files[file] || current->opened_files[file]->Get_File_Type() != NFile_Type_Major::Shm_File)
     {
-        return 0;
+        return mem::Invalid_Virtual_Address;
     }
 
     CShared_Memory *record = static_cast<CShared_Memory *>(current->opened_files[file]);
     uint32_t phys_addrs = record->Get_Phys_Addrs();
     if (phys_addrs == 0)
     {
-        return 0;
+        uint32_t new_virt_addrs = sPage_Manager.Alloc_Page();
+        if (new_virt_addrs == 0)
+        {
+            return mem::Invalid_Virtual_Address;
+        }
+        phys_addrs = new_virt_addrs - mem::MemoryVirtualBase;
+        record->Set_Phys_Addrs(phys_addrs);
     }
 
     unsigned long pt_phys_addrs = current->cpu_context.ttbr0 & (~ 0x3FFF);
     volatile uint32_t *pt_virt_addrs = reinterpret_cast<volatile uint32_t *>(pt_phys_addrs + mem::MemoryVirtualBase);
 
-    pt_virt_addrs[PT_Entry(0x70000000)] = (phys_addrs & 0xFFF00000)
-                | DL1_Flags::Access_Type_Section_Address
-                | DL1_Flags::Bufferable
-                | DL1_Flags::Cacheable
-                | DL1_Flags::Shareable
-                | DL1_Flags::Domain_0
-                | DL1_Flags::Access_Full_RW;
+    for (uint32_t i = 0; i < PT_Size; i++)
+    {
+        if ((pt_virt_addrs[i] & 0b11U) == DL1_Flags::Access_Type_Translation_Fault)
+        {
+            pt_virt_addrs[i] = (phys_addrs & 0xFFF00000)
+                        | DL1_Flags::Access_Type_Section_Address
+                        | DL1_Flags::Bufferable
+                        | DL1_Flags::Cacheable
+                        | DL1_Flags::Shareable
+                        | DL1_Flags::Domain_0
+                        | DL1_Flags::Access_Full_RW;
+            mmu_invalidate_tlb();
+            return i * PT_Region_Size;
+        }
+    }
 
-    mmu_invalidate_tlb();
 
-    return 0x70000000;
+    return mem::Invalid_Virtual_Address;
 }

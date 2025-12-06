@@ -12,8 +12,11 @@ CProcess_Resource_Manager::CProcess_Resource_Manager()
         mMutexes[i].alloc_count = 0;
     }
 
-    memory_record.alloc_count = 0;
-    memory_record.name[0] = '\0';
+    for (uint32_t i = 0; i < Shm_Count; i++)
+    {
+        mShm_Records[i].name[0] = '\0';
+        mShm_Records[i].alloc_count = 0;
+    }
 }
 
 CProcess_Resource_Manager::~CProcess_Resource_Manager()
@@ -131,6 +134,7 @@ CCondition_Variable* CProcess_Resource_Manager::Alloc_Condition_Variable(const c
 
             strncpy(mCondVars[i].name, name, Max_Cond_Var_Name_Length);
             mCondVars[i].alloc_count++;
+            mCondVars[i].cv.Reset(cvmtx);
             return &mCondVars[i].cv;
         }
     }
@@ -198,14 +202,27 @@ void CProcess_Resource_Manager::Free_Pipe(CPipe* pipe)
 
 CShared_Memory *CProcess_Resource_Manager::Alloc_Shm_File(const char* name)
 {
-    if (memory_record.alloc_count == 0)
+    for (uint32_t i = 0; i < Shm_Count; i++)
     {
-        uint32_t new_virt_addrs = sPage_Manager.Alloc_Page();
-        uint32_t phys_addrs = new_virt_addrs - mem::MemoryVirtualBase;
-        memory_record.memory.Set_Phys_Addrs(phys_addrs);
-        strncpy(memory_record.name, name, Max_Memory_Name_Length);
+        if (mShm_Records[i].alloc_count > 0)
+        {
+            if (strncmp(mShm_Records[i].name, name, Max_Memory_Name_Length) == 0)
+            {
+                mShm_Records[i].alloc_count++;
+                return &mShm_Records[i].memory;
+            }
+        }
     }
 
-    memory_record.alloc_count++;
-    return &memory_record.memory;
+    for (uint32_t i = 0; i < Shm_Count; i++)
+    {
+        if (mShm_Records[i].alloc_count == 0)
+        {
+            strncpy(mShm_Records[i].name, name, Max_Memory_Name_Length);
+            mShm_Records[i].alloc_count++;
+            return &mShm_Records[i].memory;
+        }
+    }
+
+    return nullptr;
 }

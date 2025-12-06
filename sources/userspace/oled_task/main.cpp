@@ -64,6 +64,7 @@ int main(int argc, char** argv)
 
     uint32_t memfile = open("SYS:shm/mem", NFile_Open_Mode::Read_Write);
     volatile char *mem = mmap(0x100000, memfile);
+    close(memfile);
 
     // char out[32];
     // memset(out, '\0', 32);

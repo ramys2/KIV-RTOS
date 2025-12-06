@@ -5,20 +5,21 @@
 class CShared_Memory : public IFile
 {
     private:
-        uint32_t mPhys_addrs;
+        uint32_t mPhys_Addrs;
+        
+        public:
 
-    public:
         CShared_Memory();
         ~CShared_Memory() = default;
 
         uint32_t Get_Phys_Addrs() const
         {
-            return mPhys_addrs;
+            return mPhys_Addrs;
         }
 
         void Set_Phys_Addrs(uint32_t phys_addrs)
         {
-            mPhys_addrs = phys_addrs;
+            mPhys_Addrs = phys_addrs;
         }
 
         virtual uint32_t Read(char* buffer, uint32_t num) override;
