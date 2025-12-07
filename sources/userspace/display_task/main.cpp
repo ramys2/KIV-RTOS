@@ -10,25 +10,28 @@ int main()
 {
     uint32_t uart_file = open("DEV:uart/0", NFile_Open_Mode::Write_Only);
 
-	TUART_IOCtl_Params params;
-	params.baud_rate = NUART_Baud_Rate::BR_115200;
-	params.char_length = NUART_Char_Length::Char_8;
-	ioctl(uart_file, NIOCtl_Operation::Set_Params, &params);
+    TUART_IOCtl_Params params;
+    params.baud_rate = NUART_Baud_Rate::BR_115200;
+    params.char_length = NUART_Char_Length::Char_8;
+    ioctl(uart_file, NIOCtl_Operation::Set_Params, &params);
 
-    uint32_t disp_pipe = pipe("disp_pipe", 64);
-    semaphore_t disp_sem = sem_create("disp_sem#1");
+    // Glucose receiver communications primivites
+    uint32_t gluc_disp_pipe = pipe("gluc_disp_pipe", 64);
     semaphore_t gluc_disp_sem = sem_create("gluc_disp_sem#1");
+    semaphore_t disp_gluc_sem = sem_create("disp_gluc_sem#1");
 
-    sem_acquire(disp_sem, 1);
+    // Dose communications primitives
 
-    while(true)
+    sem_acquire(disp_gluc_sem, 1);
+
+    while (true)
     {
         // Get data from glucose receiver
         sem_release(gluc_disp_sem, 1);
-        sem_acquire(disp_sem, 1);
+        sem_acquire(disp_gluc_sem, 1);
 
         char data[4];
-        uint32_t read_bytes = read(disp_pipe, data, sizeof(data));
+        uint32_t read_bytes = read(gluc_disp_pipe, data, sizeof(data));
         if (read_bytes == sizeof(data))
         {
             float glucose_val;
@@ -46,6 +49,7 @@ int main()
             write(uart_file, glucose_lvl, strlen(glucose_lvl));
         }
 
+        // Get data from insuline calcurator
     }
 
     return 0;
