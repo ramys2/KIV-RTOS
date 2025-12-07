@@ -5,4 +5,9 @@
 #include "../../userspace/build/src_counter_task.h"
 #include "../../userspace/build/src_tilt_task.h"
 
+#include "../../userspace/build/src_patient_task.h"
+#include "../../userspace/build/src_glucose_receiver.h"
+
+
+
 // az budeme umet cist SD kartu, tento soubor uplne zmizi

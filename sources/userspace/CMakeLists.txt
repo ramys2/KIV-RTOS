@@ -64,3 +64,11 @@ ADD_USERSPACE_EXECUTABLE(oled_task oled_task/main.cpp)
 ADD_USERSPACE_EXECUTABLE(logger_task logger_task/main.cpp)
 ADD_USERSPACE_EXECUTABLE(counter_task counter_task/main.cpp)
 ADD_USERSPACE_EXECUTABLE(tilt_task tilt_task/main.cpp)
+
+ADD_USERSPACE_EXECUTABLE(
+    patient_task
+    patient_task/main.cpp
+    patient_task/patient.h
+    patient_task/patient.cpp
+)
+ADD_USERSPACE_EXECUTABLE(glucose_receiver glucose_receiver/main.cpp)
