@@ -72,3 +72,4 @@ ADD_USERSPACE_EXECUTABLE(
     patient_task/patient.cpp
 )
 ADD_USERSPACE_EXECUTABLE(glucose_receiver glucose_receiver/main.cpp)
+ADD_USERSPACE_EXECUTABLE(display_task display_task/main.cpp)
