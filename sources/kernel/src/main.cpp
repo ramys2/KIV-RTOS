@@ -32,8 +32,8 @@ extern "C" unsigned int __tilt_task_elf_len;
 extern "C" unsigned char __patient_task_elf[];
 extern "C" unsigned int __patient_task_elf_len;
 
-extern "C" unsigned char __glucose_receiver_elf[];
-extern "C" unsigned int __glucose_receiver_elf_len;
+extern "C" unsigned char __glucose_sensor_task_elf[];
+extern "C" unsigned int __glucose_sensor_task_elf_len;
 
 extern "C" unsigned char __display_task_elf[];
 extern "C" unsigned int __display_task_elf_len;
@@ -58,9 +58,9 @@ extern "C" int _kernel_main(void)
 	// sProcessMgr.Create_Process(__tilt_task_elf, __tilt_task_elf_len, false);
 
     sProcessMgr.Create_Process(__patient_task_elf, __patient_task_elf_len, false);
-    sProcessMgr.Create_Process(__glucose_receiver_elf, __glucose_receiver_elf_len, false);
-    sProcessMgr.Create_Process(__display_task_elf, __display_task_elf_len, false);
+    sProcessMgr.Create_Process(__glucose_sensor_task_elf, __glucose_sensor_task_elf_len, false);
     sProcessMgr.Create_Process(__dose_calc_task_elf, __dose_calc_task_elf_len, false);
+    sProcessMgr.Create_Process(__display_task_elf, __display_task_elf_len, false);
 
 	// zatim zakazeme IRQ casovace
 	sInterruptCtl.Disable_Basic_IRQ(hal::IRQ_Basic_Source::Timer);

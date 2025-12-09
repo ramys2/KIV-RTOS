@@ -46,27 +46,28 @@ int main()
 {
     CDose_Calculator calc;
 
-    // Glucose receiver communication primitives
-    uint32_t dose_gluc_pipe = pipe("dose_gluc_pipe", 64);
-    semaphore_t dose_gluc_sem = sem_create("dose_gluc_sem#1");
-    semaphore_t gluc_dose_sem = sem_create("gluc_dose_sem#1");
-
-    // Display communication primitives
-
-    sem_acquire(dose_gluc_sem, 1);
+    uint32_t led = open("DEV:gpio/20", NFile_Open_Mode::Write_Only);
+    uint32_t gluc_dose_pipe = pipe("gluc_dose_pipe", sizeof(float));
+    uint32_t dose_pat_pipe = pipe("dose_pat_pipe", sizeof(float));
+    uint32_t dose_disp_pipe = pipe("dose_disp_pipe", sizeof(float));
 
     while(true)
     {
-        sem_release(gluc_dose_sem, 1);
-        sem_acquire(dose_gluc_sem, 1);
+        char data[sizeof(float)];
+        uint32_t read_bytes = read(gluc_dose_pipe, data, sizeof(data));
+        write(led, "1", 1);
 
-        char data[4];
-        uint32_t read_bytes = read(dose_gluc_pipe, data, sizeof(data));
+        float glucose = *reinterpret_cast<float *>(data);
+        float dose = calc.Calculate_Dose(glucose);
 
-        if (read_bytes == sizeof(data))
-        {
-            float glucose_value = *reinterpret_cast<float*>(data);
-            float dose = calc.Calculate_Dose(glucose_value);
-        }
+        // Send to patient and display
+        write(dose_pat_pipe, reinterpret_cast<char *>(&dose), sizeof(dose));
+        write(dose_disp_pipe, reinterpret_cast<char *>(&dose), sizeof(dose));
     }
+
+    close(gluc_dose_pipe);
+    close(dose_pat_pipe);
+    close(dose_disp_pipe);
+
+    return 0;
 }

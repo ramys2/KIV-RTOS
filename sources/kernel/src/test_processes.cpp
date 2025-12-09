@@ -6,7 +6,7 @@
 #include "../../userspace/build/src_tilt_task.h"
 
 #include "../../userspace/build/src_patient_task.h"
-#include "../../userspace/build/src_glucose_receiver.h"
+#include "../../userspace/build/src_glucose_sensor_task.h"
 #include "../../userspace/build/src_display_task.h"
 #include "../../userspace/build/src_dose_calc_task.h"
 

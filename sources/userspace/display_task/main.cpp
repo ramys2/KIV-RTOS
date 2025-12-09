@@ -4,7 +4,8 @@
 
 #include <drivers/bridges/uart_defs.h>
 
-constexpr char GLUCOSE_PREFIX[] = "GLU: ";
+constexpr char GLUCOSE_PREFIX[] = "GLU:";
+constexpr char INSULIN_PREFIX[] = "INS:";
 
 int main()
 {
@@ -15,42 +16,46 @@ int main()
     params.char_length = NUART_Char_Length::Char_8;
     ioctl(uart_file, NIOCtl_Operation::Set_Params, &params);
 
-    // Glucose receiver communications primivites
-    uint32_t gluc_disp_pipe = pipe("gluc_disp_pipe", 64);
-    semaphore_t gluc_disp_sem = sem_create("gluc_disp_sem#1");
-    semaphore_t disp_gluc_sem = sem_create("disp_gluc_sem#1");
+    uint32_t led = open("DEV:gpio/21", NFile_Open_Mode::Write_Only);
+    uint32_t gluc_disp_pipe = pipe("gluc_disp_pipe", sizeof(float));
+    uint32_t dose_disp_pipe = pipe("dose_disp_pipe", sizeof(float));
 
-    // Dose communications primitives
-
-    sem_acquire(disp_gluc_sem, 1);
-
-    while (true)
+    char data[sizeof(float)];
+    char str[128];
+    char float_str[64];
+    while(true)
     {
-        // Get data from glucose receiver
-        sem_release(gluc_disp_sem, 1);
-        sem_acquire(disp_gluc_sem, 1);
+        memset(str, '\0', sizeof(str));
+        memset(float_str, '\0', sizeof(float_str));
 
-        char data[4];
         uint32_t read_bytes = read(gluc_disp_pipe, data, sizeof(data));
-        if (read_bytes == sizeof(data))
-        {
-            float glucose_val;
-            memcpy(data, &glucose_val, sizeof(float));
+        write(led, "1", 1);
+        float glucose = *reinterpret_cast<float *>(data);
+        ftoa(glucose, float_str, 2);
 
-            char gluc_str[32];
-            ftoa(glucose_val, gluc_str, 2);
+        strncpy(str, GLUCOSE_PREFIX, sizeof(GLUCOSE_PREFIX));
+        strncpy(str + strlen(str), float_str, strlen(float_str));
+        strncpy(str + strlen(str), "\n", 1);
 
-            char glucose_lvl[128];
-            memset(glucose_lvl, '\0', 128);
-            strncpy(glucose_lvl, GLUCOSE_PREFIX, sizeof(GLUCOSE_PREFIX));
-            strncpy(glucose_lvl + strlen(glucose_lvl), gluc_str, strlen(gluc_str));
-            strncpy(glucose_lvl + strlen(glucose_lvl), "\n", 1);
+        write(uart_file, str, strlen(str));
 
-            write(uart_file, glucose_lvl, strlen(glucose_lvl));
-        }
+        // Reset str and float str
+        memset(str, '\0', sizeof(str));
+        memset(float_str, '\0', sizeof(float_str));
 
-        // Get data from insuline calcurator
+        read_bytes = read(dose_disp_pipe, data, sizeof(data));
+        float insulin = *reinterpret_cast<float *>(data);
+        ftoa(insulin, float_str, 2);
+
+        strncpy(str, INSULIN_PREFIX, sizeof(INSULIN_PREFIX));
+        strncpy(str + strlen(str), float_str, strlen(float_str));
+        strncpy(str + strlen(str), "\n", 1);
+
+        write(uart_file, str, strlen(str));
     }
+
+    close(gluc_disp_pipe);
+    close(dose_disp_pipe);
 
     return 0;
 }

@@ -3,37 +3,42 @@
 #include <stdstring.h>
 #include <stdmutex.h>
 
-
+constexpr uint32_t SEND_VALUES = 5;
 
 int main()
 {
     CVirtual_Patient patient;
 
-    uint32_t pat_gluc_pipe = pipe("pat_gluc_pipe", 64);
-    semaphore_t pat_gluc_sem = sem_create("pat_gluc_sem#1");
-    semaphore_t gluc_pat_sem = sem_create("gluc_pat_sem#1");
+    uint32_t led = open("DEV:gpio/18", NFile_Open_Mode::Write_Only);
+    uint32_t pat_gluc_pipe = pipe("pat_gluc_pipe", sizeof(float));
+    uint32_t dose_pat_pipe = pipe("dose_pat_pipe", sizeof(float));
 
-    sem_acquire(pat_gluc_sem, 1);
-
+    bool first_ite = true;
+    uint32_t sent_vals = 0;
     while (true)
     {
-        // Wait for handshake
-        sem_release(gluc_pat_sem, 1);
-        sem_acquire(pat_gluc_sem, 1);
+        float curr_glucose = patient.Get_Current_Glucose();
+        write(pat_gluc_pipe, reinterpret_cast<char*>(&curr_glucose), sizeof(curr_glucose));
 
-        // ========= Send data =========
-        float data = patient.Get_Current_Glucose();
-        write(pat_gluc_pipe, reinterpret_cast<char*>(&data), sizeof(float));
-        // =============================
+        if (sent_vals == SEND_VALUES)
+        {
+            char data[sizeof(float)];
+            uint32_t read_bytes = read(dose_pat_pipe, data, sizeof(data));
+            write(led, "1", 1);
+
+            float dose = *reinterpret_cast<float *>(data);
+            patient.Dose_Insulin(dose);
+            sent_vals = 0;
+        }
+
+        sent_vals++;
         sleep(1000);
         patient.Step();
     }
-    
 
-
-    sem_destroy(gluc_pat_sem);
-    sem_destroy(pat_gluc_sem);
+    close(led);
     close(pat_gluc_pipe);
+    close(dose_pat_pipe);
 
     return 0;
 }

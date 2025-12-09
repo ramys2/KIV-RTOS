@@ -71,6 +71,6 @@ ADD_USERSPACE_EXECUTABLE(
     patient_task/patient.h
     patient_task/patient.cpp
 )
-ADD_USERSPACE_EXECUTABLE(glucose_receiver glucose_receiver/main.cpp)
+ADD_USERSPACE_EXECUTABLE(glucose_sensor_task glucose_sensor_task/main.cpp)
 ADD_USERSPACE_EXECUTABLE(display_task display_task/main.cpp)
 ADD_USERSPACE_EXECUTABLE(dose_calc_task dose_calc_task/main.cpp)
