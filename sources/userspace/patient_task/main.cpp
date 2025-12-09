@@ -15,9 +15,8 @@ int main()
 
     uint32_t led = open("DEV:gpio/20", NFile_Open_Mode::Write_Only);
     uint32_t sh_pipe = pipe("sh_pipe", 4);
-    semaphore_t data_ready = sem_create("data_ready#1");
 
-    char *last_led_val = "0";
+    char last_led_val[] = "0";
     while (true)
     {
         uint32_t num = 20;
@@ -25,12 +24,10 @@ int main()
         write(led, last_led_val, 1);
         sleep(10000);
         write(sh_pipe, reinterpret_cast<char *>(&num), sizeof(num));
-        sem_release(data_ready, 1);
     }
 
     close(led);
     close(sh_pipe);
-    sem_destroy(data_ready);
 
     return 0;
 }
