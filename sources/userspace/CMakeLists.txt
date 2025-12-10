@@ -65,6 +65,7 @@ ADD_USERSPACE_EXECUTABLE(logger_task logger_task/main.cpp)
 ADD_USERSPACE_EXECUTABLE(counter_task counter_task/main.cpp)
 ADD_USERSPACE_EXECUTABLE(tilt_task tilt_task/main.cpp)
 
+# SYNCHRONYOUS TASKS
 ADD_USERSPACE_EXECUTABLE(
     patient_task
     patient_task/main.cpp
@@ -73,4 +74,26 @@ ADD_USERSPACE_EXECUTABLE(
 )
 ADD_USERSPACE_EXECUTABLE(glucose_sensor_task glucose_sensor_task/main.cpp)
 ADD_USERSPACE_EXECUTABLE(display_task display_task/main.cpp)
-ADD_USERSPACE_EXECUTABLE(dose_calc_task dose_calc_task/main.cpp)
+ADD_USERSPACE_EXECUTABLE(
+    dose_calc_task
+    dose_calc_task/main.cpp
+    dose_calc_task/dose_calculator.h
+    dose_calc_task/dose_calculator.cpp
+)
+
+# ASYNCHRONYOUS TASKS
+ADD_USERSPACE_EXECUTABLE(
+    async_patient_task
+    patient_task/async_main.cpp
+    patient_task/patient.h
+    patient_task/patient.cpp
+)
+ADD_USERSPACE_EXECUTABLE(async_glucose_sensor_task glucose_sensor_task/async_main.cpp)
+ADD_USERSPACE_EXECUTABLE(async_display_task display_task/async_main.cpp)
+ADD_USERSPACE_EXECUTABLE(
+    async_dose_calc_task
+    dose_calc_task/async_main.cpp
+    dose_calc_task/dose_calculator.h
+    dose_calc_task/dose_calculator.cpp
+)
+

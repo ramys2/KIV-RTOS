@@ -29,6 +29,7 @@ int main()
             float dose = *reinterpret_cast<float *>(data);
             patient.Dose_Insulin(dose);
             sent_vals = 0;
+            continue;
         }
 
         sent_vals++;

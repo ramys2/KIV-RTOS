@@ -41,6 +41,18 @@ extern "C" unsigned int __display_task_elf_len;
 extern "C" unsigned char __dose_calc_task_elf[];
 extern "C" unsigned char __dose_calc_task_elf_len;
 
+extern "C" unsigned char __async_patient_task_elf[];
+extern "C" unsigned int __async_patient_task_elf_len;
+
+extern "C" unsigned char __async_glucose_sensor_task_elf[];
+extern "C" unsigned int __async_glucose_sensor_task_elf_len;
+
+extern "C" unsigned char __async_display_task_elf[];
+extern "C" unsigned int __async_display_task_elf_len;
+
+extern "C" unsigned char __async_dose_calc_task_elf[];
+extern "C" unsigned char __async_dose_calc_task_elf_len;
+
 extern "C" int _kernel_main(void)
 {
 	// inicializace souboroveho systemu
@@ -57,10 +69,15 @@ extern "C" int _kernel_main(void)
 	// sProcessMgr.Create_Process(__counter_task_elf, __counter_task_elf_len, false);
 	// sProcessMgr.Create_Process(__tilt_task_elf, __tilt_task_elf_len, false);
 
-    sProcessMgr.Create_Process(__patient_task_elf, __patient_task_elf_len, false);
-    sProcessMgr.Create_Process(__glucose_sensor_task_elf, __glucose_sensor_task_elf_len, false);
-    sProcessMgr.Create_Process(__dose_calc_task_elf, __dose_calc_task_elf_len, false);
-    sProcessMgr.Create_Process(__display_task_elf, __display_task_elf_len, false);
+    // sProcessMgr.Create_Process(__patient_task_elf, __patient_task_elf_len, false);
+    // sProcessMgr.Create_Process(__glucose_sensor_task_elf, __glucose_sensor_task_elf_len, false);
+    // sProcessMgr.Create_Process(__dose_calc_task_elf, __dose_calc_task_elf_len, false);
+    // sProcessMgr.Create_Process(__display_task_elf, __display_task_elf_len, false);
+
+    sProcessMgr.Create_Process(__async_patient_task_elf, __async_patient_task_elf_len, false);
+    sProcessMgr.Create_Process(__async_glucose_sensor_task_elf, __async_glucose_sensor_task_elf_len, false);
+    sProcessMgr.Create_Process(__async_dose_calc_task_elf, __async_dose_calc_task_elf_len, false);
+    sProcessMgr.Create_Process(__async_display_task_elf, __async_display_task_elf_len, false);
 
 	// zatim zakazeme IRQ casovace
 	sInterruptCtl.Disable_Basic_IRQ(hal::IRQ_Basic_Source::Timer);
