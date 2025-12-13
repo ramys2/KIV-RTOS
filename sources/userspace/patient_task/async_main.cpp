@@ -6,9 +6,10 @@
 constexpr uint32_t SEND_VALUES = 5;
 
 int main()
-{
+{ 
     CVirtual_Patient patient;
 
+    uint32_t switch_fd = open("DEV:gpio/17", NFile_Open_Mode::Read_Only);
     uint32_t pat_gluc_fd = open("SYS:shm/pat_gluc_mem", NFile_Open_Mode::Read_Write);
     char *pat_gluc_mem = mmap(0x100000, pat_gluc_fd);
     uint32_t dose_pat_fd = open("SYS:shm/dose_pat_mem", NFile_Open_Mode::Read_Write);
@@ -21,8 +22,14 @@ int main()
 
     bool first_ite = true;
     uint32_t sent_vals = 0;
+    char switch_val[4];
     while (true)
-    {
+    {     
+        memset(switch_val, '\0', sizeof(switch_val));
+        read(switch_fd, switch_val, 1); 
+
+        uint32_t sleep_time = switch_val[0] == '1' ? 1000 : 500;
+
         float curr_glucose = patient.Get_Current_Glucose();
         memcpy(&curr_glucose, pat_gluc_mem, sizeof(curr_glucose));
         sem_release(gluc_pat_sem, 1);
@@ -33,12 +40,14 @@ int main()
             float dose = *reinterpret_cast<float *>(dose_pat_mem);
             patient.Dose_Insulin(dose);
             sent_vals = 0;
+            patient.Step();
+            sleep(sleep_time);
             continue;
         }
-
-
+        
+        
         sent_vals++;
-        sleep(1000);
+        sleep(sleep_time);
         patient.Step();
     }
 
