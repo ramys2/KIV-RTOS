@@ -40,8 +40,8 @@ int main()
             float dose = *reinterpret_cast<float *>(dose_pat_mem);
             patient.Dose_Insulin(dose);
             sent_vals = 0;
-            patient.Step();
             sleep(sleep_time);
+            patient.Step();
             continue;
         }
         
